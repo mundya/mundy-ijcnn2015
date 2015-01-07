@@ -32,154 +32,53 @@
 
   \begin{abstract}
 
-    Building and simulating neural systems is a promising avenue in our search
-    for understanding how the brain may work and for how neural and cognitive
-    systems may be employed to tackle engineering problems. The Neural
-    Engineering Framework (NEF) is an interesting hypothesis about how such
-    systems may be constructed and has recently being used to build the world's
-    first functional brain model. However, while the NEF simplifies the design 
-    of complex neural networks, simulating these using standard computer 
-    hardware is still computationally expensive -- often running far slower
-    than biological real-time and scaling very poorly: problems the SpiNNaker 
-    neuromorphic simulator was designed to solve. In this paper we (1) argue 
-    that employing the model of computation used for simulating general purpose 
-    spiking neural networks on SpiNNaker for NEF models is sub-optimal, and (2) 
-    provide and evaluate an alternative simulation scheme which overcomes the 
-    memory and communication challenges posed by the NEF.
+Building and simulating neural systems is a promising avenue in our search for understanding how the brain may work and for how neural and cognitive systems may be employed to tackle engineering problems. The Neural Engineering Framework (NEF) is an interesting hypothesis about how such systems may be constructed and has recently being used to build the world's first functional brain model. However, while the NEF simplifies the design of complex neural networks, simulating these using standard computer hardware is still computationally expensive -- often running far slower than biological real-time and scaling very poorly: problems the SpiNNaker neuromorphic simulator was designed to solve. In this paper we (1) argue that employing the model of computation used for simulating general purpose spiking neural networks on SpiNNaker for NEF models is sub-optimal, and (2) provide and evaluate an alternative simulation scheme which overcomes the memory and communication challenges posed by the NEF.
 
   \end{abstract}
 
   \section{Introduction}
 
-  For a given power budget, two factors limit the simulation of neural networks
-  on any computing platform: scale and time. In principle any scale of network
-  may be simulated but as scale increases simulation time follows. Conversely,
-  if the simulation time is limited (for example, if biological real-time is
-  necessary) then only a limited scale of network may be simulated.
-  Specialised ``neuromorphic'' hardware tries to avoid these constraints by
-  parallelising and distributing computational effort and relying on dense
-  interconnection of the computing elements. The SpiNNaker platform
-  \parencite{Furber2014} is one of a range of neuromorphic simulators
-  (including NeuroGrid \parencite{}, FACETS \parencite{} and lately TrueNorth
-  \parencite{}) which should benefit investigators of embodied cognition and
-  researchers of large neural models alike by enabling scalable, rapid
-  simulation of large-scale neural networks.
+For a given power budget, two factors limit the simulation of neural networks on any computing platform: scale and time. In principle any scale of network may be simulated but as scale increases simulation time follows. Conversely, if the simulation time is limited (for example, if biological real-time is necessary) then only a limited scale of network may be simulated. Specialised ``neuromorphic'' hardware tries to avoid these constraints by parallelising and distributing computational effort and relying on dense interconnection of the computing elements. The SpiNNaker platform \parencite{Furber2014} is one of a range of neuromorphic simulators (including NeuroGrid \parencite{}, FACETS \parencite{} and lately TrueNorth \parencite{}) which should benefit investigators of embodied cognition and researchers of large neural models alike by enabling scalable, rapid simulation of large-scale neural networks.
 
-  The Neural Engineering Framework (NEF) \parencite{Eliasmith2004} is a
-  hypothesis about how neurons may act to encode the abstract mathematical
-  constructs, such as scalars and vectors, that we often use in modelling the
-  real world. Its successes so far include the Spaun model of cognition
-  \parencite{Eliasmith2012} and applications in embedded robotics (e.g.,
-  \parencite{Stewart2015ip}). As with all neural systems, the NEF has proven
-  costly to simulate with simulations of the Spaun model typically taking
-  \SI{2.5}{\hour} of simulation time for \SI{1}{\second} of simulation
-  \parencite[\S V]{Stewart2014}. Two aspects of NEF networks that make them 
-  particularily costly to simulate are the high firing rates of individual 
-  neurons (around \SIrange{200}{400}{\hertz} when saturated) and the dense 
-  synaptic matrices used to connect neuronal populations. The former 
-  presents a significant communication cost to any specialised neuromorphic 
-  hardware and the latter requires that large amounts of memory be used to 
-  represent the neural network with all the associated costs of transferring 
-  large blocks of data that implies.
+The Neural Engineering Framework (NEF) \parencite{Eliasmith2004} is a hypothesis about how neurons may act to encode the abstract mathematical constructs, such as scalars and vectors, that we often use in modelling the real world. Its successes so far include the Spaun model of cognition \parencite{Eliasmith2012} and applications in embedded robotics (e.g., \parencite{Stewart2015ip}). As with all neural systems, the NEF has proven costly to simulate with simulations of the Spaun model typically taking \SI{2.5}{\hour} of simulation time for \SI{1}{\second} of simulation \parencite[\S V]{Stewart2014}. Two aspects of NEF networks that make them particularily costly to simulate are the high firing rates of individual neurons (around \SIrange{200}{400}{\hertz} when saturated) and the dense synaptic matrices used to connect neuronal populations. The former presents a significant communication cost to any specialised neuromorphic hardware and the latter requires that large amounts of memory be used to represent the neural network with all the associated costs of transferring large blocks of data that implies.
 
   In this paper we:
   \begin{enumerate}
-    \item argue that due to these properties of the NEF, the
-      existing solutions and algorithms used to simulate neural networks on
-      SpiNNaker will not satisfactorily scale to Spaun-like models,
-    \item detail a method by which features of the NEF may be used to reduce
-      the communication and memory costs associated with its simulation.
+    \item argue that due to these properties of the NEF, the existing solutions and algorithms used to simulate neural networks on SpiNNaker will not satisfactorily scale to Spaun-like models,
+    \item detail a method by which features of the NEF may be used to reduce the communication and memory costs associated with its simulation.
   \end{enumerate}
 
-  The result is a model of computation similar to the data-flow computer which
-  we hope to use in running the full Spaun model in biological real-time.
+The result is a model of computation similar to the data-flow computer which we hope to use in running the full Spaun model in biological real-time.
 
   \section{Background}
 
-  In this section we briefly discuss the SpiNNaker platform and how neural
-  networks are currently simulated on it, how well the Neural Engineering
-  Framework (NEF) could map to SpiNNaker using this scheme, and how the NEF
-  works to specify and build neural networks and why these networks
+In this section we briefly discuss the SpiNNaker platform and how neural networks are currently simulated on it, how well the Neural Engineering Framework (NEF) could map to SpiNNaker using this scheme, and how the NEF works to specify and build neural networks and why these networks
 
   \subsection{The SpiNNaker platform}
-  The SpiNNaker platform is a massively parallel architecture designed to 
-  simulate neural networks. A SpiNNaker machine is constructed from a number 
-  of SpiNNaker chips, each connected to their six immediate neighbours using a 
-  chip-level interconnection network with a toroidal, triangular mesh 
-  topology. Each SpiNNaker chip contains 18 ARM processing cores connected, via 
-  a network-on-chip, to each other and the external network through a 
-  multicast router. Each core has two small tightly-coupled memories: 
-  \SI{32}{\kibi\byte} for instructions~(ITCM) and \SI{64}{\kibi\byte} for 
-  data~(DTCM) and shares \SI{128}{\mebi\byte} of off-chip SDRAM with the other 
-  cores on the SpiNNaker chip.
 
-  SpiNNaker is an event-driven message-passing computing architecture. The
-  software running on a core may transmit packets to other processing cores to
-  indicate the occurrence of events or to share data. A packet consists of a
-  \SI{32}{\bit} key -- which is used to direct the packet around the network --
-  and, optionally, a \SI{32}{\bit} data payload. When a packet reaches a
-  router the key is inspected to determine to which (if any) of the 18
-  processors and six external links attached to the router it should be
-  forwarded. On receipt of a packet a core executes a \textit{callback}
-  function which may inspect the packet and schedule further execution as
-  required.
+The SpiNNaker platform is a massively parallel architecture designed to simulate neural networks. A SpiNNaker machine is constructed from a number of SpiNNaker chips, each connected to their six immediate neighbours using a chip-level interconnection network with a toroidal, triangular mesh topology. Each SpiNNaker chip contains 18 ARM processing cores connected, via a network-on-chip, to each other and the external network through a multicast router. Each core has two small tightly-coupled memories: \SI{32}{\kibi\byte} for instructions~(ITCM) and \SI{64}{\kibi\byte} for data~(DTCM) and shares \SI{128}{\mebi\byte} of off-chip SDRAM with the other cores on the SpiNNaker chip.
+
+SpiNNaker is an event-driven message-passing computing architecture. The software running on a core may transmit packets to other processing cores to indicate the occurrence of events or to share data. A packet consists of a \SI{32}{\bit} key -- which is used to direct the packet around the network -- and, optionally, a \SI{32}{\bit} data payload. When a packet reaches a router the key is inspected to determine to which (if any) of the 18 processors and six external links attached to the router it should be forwarded. On receipt of a packet a core executes a \textit{callback} function which may inspect the packet and schedule further execution as required.
 
   \subsection{Simulating neural nets on SpiNNaker}
 
-  When simulating neural nets on a SpiNNaker machine, each core is responsible
-  for simulating a number (in the order of a few hundred) of point neurons. 
-  When one of these neuron spikes, it transmits a packet whose key uniquely 
-  identifies the neuron (for this it requires no payload). This ``spike'' 
-  packet is then routed across the network fabric to the processing cores 
-  responsible for simulating each of the neurons that are synaptically 
-  connected to the firing neuron. On receipt of a ``spike'' packet, a core 
-  retrieves the ``row'' of the connectivity matrix associated with the firing 
-  neuron from SDRAM. Each of these rows describes the synaptic weights and 
-  delays associated with the connections between the firing neuron and those 
-  simulated on the core. Once a row is retrived, the weights are inserted into 
-  an input ring-buffer where they remain until the synaptic delay has elapsed 
-  and they are used to calculate the neuronal input current.
+When simulating neural nets on a SpiNNaker machine, each core is responsible for simulating a number (in the order of a few hundred) of point neurons. When one of these neuron spikes, it transmits a packet whose key uniquely identifies the neuron (for this it requires no payload). This ``spike'' packet is then routed across the network fabric to the processing cores responsible for simulating each of the neurons that are synaptically connected to the firing neuron. On receipt of a ``spike'' packet, a core retrieves the row of the connectivity matrix associated with the firing neuron from SDRAM. Each of these rows describes the synaptic weights and delays associated with the connections between the firing neuron and those simulated on the core. Once a row is retrived, the weights are inserted into an input ring-buffer where they remain until the synaptic delay has elapsed and they are used to calculate the neuronal input current.
 
-  There are three primary constraints to the number of neurons that may be
-  simulated on a single processing core:
+There are three primary constraints to the number of neurons that may be simulated on a single processing core:
 
   \begin{enumerate}
-    \item The amount of memory required to store the synaptic weight matrices
-      must fit within the space available to the core.
-    \item The number of packets likely to be transmitted by the core should not
-      lead to saturation of the interconnection network.
+    \item The amount of memory required to store the synaptic weight matrices must fit within the space available to the core.
+    \item The number of packets likely to be transmitted by the core should not lead to saturation of the interconnection network.
     \item As \textcite{Sharp2013} discuss, the majority of processing time is spent in the synaptic processing pipeline so there must be sufficient time for the core to process all incoming `spike' packets; and retrieve and process the synaptic rows during one simulation time-step.
   \end{enumerate}
 
-  These constraints may be met by either allocating fewer neurons to each
-  processing core or by increasing the processing time used for each simulation
-  time-step.
-  
-  In practice there are limits to the number of processors and the amount of
-  time that are available (though one aim of the SpiNNaker project is to build
-  a machine consisting of one million cores). Hard time constraints are
-  necessary when SpiNNaker is required to run in biological real-time, as it is
-  in experiments with other neuromorphic hardware. Processor constraints are
-  present for those with access to only small SpiNNaker machines. At some
-  point it is necessary to ensure that efficient use is made of the machine
-  with regard to both time and processor usage.
+These constraints may be met by either allocating fewer neurons to each processing core or by increasing the processing time used for each simulation time-step.
 
-  To a first approximation the first constraint is that the synaptic matrices
-  for a core's neurons must fit within $\frac{128}{16} = \SI{8}{\mebi\byte}$.
-  The interconnection network was designed around an expectation that each core
-  would simulate around \num{1000} neurons firing at roughly \SI{10}{\hertz}
-  and that consequently the second constraint is that when simulating on a
-  millisecond time-step in biological real-time each core is expected to
-  transmit around 10 spikes per time-step. The third constraint is given by
-  \textcite[\S III.C]{Sharp2013} as around \num{5000} spikes per millisecond.
+In practice there are limits to the number of processors and the amount of time that are available (though one aim of the SpiNNaker project is to build a machine consisting of one million cores). Hard time constraints are necessary when SpiNNaker is required to run in biological real-time, as it is in experiments with other neuromorphic hardware. Processor constraints are present for those with access to only small SpiNNaker machines. At some point it is necessary to ensure that efficient use is made of the machine with regard to both time and processor usage.
 
-  It should be noted that time is also a factor \textit{prior} to the start of
-  any simulation. All data required by the SpiNNaker machine during simulation
-  must be transmitted to it across ethernet, consequently the more data
-  required on the machine the greater the time required to prepare it for
-  simulation. \textcite{Sharp2013} note that this can take a significant
-  period of time and that this is undesirable if a real-time simulator is
-  desired.
+To a first approximation the first constraint is that the synaptic matrices for a core's neurons must fit within $\frac{128}{16} = \SI{8}{\mebi\byte}$. The interconnection network was designed around an expectation that each core would simulate around \num{1000} neurons firing at roughly \SI{10}{\hertz} and that consequently the second constraint is that when simulating on a millisecond time-step in biological real-time each core is expected to transmit around 10 spikes per time-step. The third constraint is given by \textcite[\S III.C]{Sharp2013} as around \num{5000} spikes per millisecond.
+
+It should be noted that time is also a factor \textit{prior} to the start of any simulation. All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, consequently the more data required on the machine the greater the time required to prepare it for simulation. \textcite{Sharp2013} note that this can take a significant period of time and that this is undesirable if a real-time simulator is desired.
 
   \subsection{Assessing the Neural Engineering Framework (NEF)}
 
@@ -189,23 +88,19 @@
 
   Introduce the NEF, how do weight matrices get formed.
 
-  \section{Exploiting features of the NEF for effective simulation on
-           SpiNNaker}
-  
+  \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
+
   \section{Results}
 
   \section{Discussion}
 
   \section{Conclusion}
-  
+
   \section*{Acknowledgements}
 
-  The authors would like to extend their thanks to the organisers of the
-  Telluride Neuromorphic Cognition Engineering Workshop.
+The authors would like to extend their thanks to the organisers of the Telluride Neuromorphic Cognition Engineering Workshop.
 
-  The research leading to these results has received funding from the European
-  Research Council under the European Union’s Seventh Framework Programme
-  (FP7/2007-2013) / ERC grant agreement number 320689.
+The research leading to these results has received funding from the European Research Council under the European Union’s Seventh Framework Programme (FP7/2007-2013) / ERC grant agreement number 320689.
 
   \printbibliography
 
