@@ -23,6 +23,9 @@
 \usepackage[binary-units]{siunitx}
 \usepackage[caption=false, font=footnotesize]{subfig}
 
+%% Maths
+\renewcommand{\vec}{\mathbf}  % Bold vectors
+
 %% Bibliographies
 \usepackage[backend=bibtex, style=ieee, doi=false, url=false]{biblatex}
 \bibliography{paper}
@@ -52,7 +55,7 @@ The result is a model of computation similar to the data-flow computer which we 
 
   \section{Background}
 
-In this section we briefly discuss the SpiNNaker platform and how neural networks are currently simulated on it, how well the Neural Engineering Framework (NEF) could map to SpiNNaker using this scheme, and how the NEF works to specify and build neural networks and why these networks
+In this section we briefly discuss the SpiNNaker platform and how neural networks are currently simulated on it before introducing the Neural Engineering Framework (NEF) and discussing how models built with it may act to stress SpiNNaker in various ways.
 
   \subsection{The SpiNNaker platform}
 
@@ -80,13 +83,35 @@ To a first approximation the first constraint is that the synaptic matrices for 
 
 It should be noted that time is also a factor \textit{prior} to the start of any simulation. All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, consequently the more data required on the machine the greater the time required to prepare it for simulation. \textcite{Sharp2013} note that this can take a significant period of time and that this is undesirable if a real-time simulator is desired.
 
+  \subsection{The Neural Engineering Framework}
+
+The Neural Engineering Framework (NEF) extends the concept of ``preferred-direction vectors'' \parencite{} to all neural populations. Each population is said to represent a vector within a particular space, with each neuron in that population firing in response to the similarity of the represented vector to its own ``encoding'' vector.  Using the notation of \textcite{Stewart2014} this may be expressed as:
+
+\begin{equation}
+  \delta_{i}\left(\vec{x}\right) = G_{i}\left[ \alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i \right]
+\end{equation}
+
+Which states that the firing response of neuron $i$, $\delta_i$, to the represented value of $\vec{x}$ is the response of the neuron model to an input consisting of a randomly selected gain term ($\alpha_i$), the encoding vector for the neuron ($\vec{e}_i$) and a fixed bias current $J^{bias}_i$.  The process of ``encoding'' allows us to transform a variable in vector form into the spiking response of a population of neurons.  Correspondingly, ``decoding'' allows a transformation from the spiking actions of neurons into the domain of vectors.  Again using the notation of \textcite{Stewart2014} we can express this decoding process as:
+
+\begin{equation}
+  \vec{\hat{x}} = \sum\limits_{i=1}^{N} a_i(\vec{x})\vec{d}_i
+\end{equation}
+
+Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum of the spiking activity of each neuron $a_i$ multiplied by the linear decoder for the neuron $\vec{d}_i$.  The decoding vectors $\vec{d}_i$ may be selected to compute a function of the value represented by the population.
+
+%% Synaptic filtering
+
+The combination of encoders and decoders leads naturally to the connection weights between any pair of neuronal populations. For a connection between a pair of populations the synaptic weights are given by the matrix product of the decoders of the pre-synaptic population and the encoders of the post-synaptic population \parencite{Stewart2014}:
+
+\begin{equation}
+  \omega_{ij} = \alpha_j \vec{d_i}\vec{e_j}
+\end{equation}
+
+With $i$ indexing neurons in the pre-synaptic population and $j$ those in the post-synaptic population.  The resultant connection matrix will typically be dense.  If the specific decoder chosen computes the identity function the network constructed is simply a \textit{communication channel}: the values represented by the pre-synaptic population will be transmitted to and represented by the post-synaptic population.
+
   \subsection{Assessing the Neural Engineering Framework (NEF)}
 
   TODO: Compare known facts about the NEF to SpiNNaker constraints.
-
-  \subsection{The Neural Engineering Framework}
-
-  Introduce the NEF, how do weight matrices get formed.
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
 
