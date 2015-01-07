@@ -1,8 +1,7 @@
 \documentclass[conference]{IEEEtran}
 
 %% Document properties (~ is a non-breaking space)
-\title{Using Factored~Weight~Matrices for an efficient SpiNNaker implementation
-       of the Neural~Engineering~Framework}
+\title{Using Factored~Weight~Matrices for an efficient SpiNNaker implementation of the Neural~Engineering~Framework}
 \author{%
   \IEEEauthorblockN{Andrew~Mundy, James~Knight and Steve Furber}
   \IEEEauthorblockA{School of Computer Science,\\
@@ -90,7 +89,6 @@
       SpiNNaker will not satisfactorily scale to Spaun-like models,
     \item detail a method by which features of the NEF may be used to reduce
       the communication and memory costs associated with its simulation.
-      
   \end{enumerate}
 
   The result is a model of computation similar to the data-flow computer which
@@ -150,11 +148,7 @@
       must fit within the space available to the core.
     \item The number of packets likely to be transmitted by the core should not
       lead to saturation of the interconnection network.
-    \item As Sharp and Furber \parencite{Sharp2013} discuss, the majority of 
-      processing time is spent in the synaptic processing pipeline so there 
-      must be sufficient time for the core to process all incoming `spike' 
-      packets; and retrieve and process the synaptic rows during one simulation 
-      time-step.
+    \item As \textcite{Sharp2013} discuss, the majority of processing time is spent in the synaptic processing pipeline so there must be sufficient time for the core to process all incoming `spike' packets; and retrieve and process the synaptic rows during one simulation time-step.
   \end{enumerate}
 
   These constraints may be met by either allocating fewer neurons to each
