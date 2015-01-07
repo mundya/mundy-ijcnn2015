@@ -6,3 +6,5 @@
 *.xml
 *.bl[gx]
 *-blx.bib
+/application_generated_data_files/
+/reports/
