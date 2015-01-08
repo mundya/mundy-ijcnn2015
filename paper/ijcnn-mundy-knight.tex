@@ -22,6 +22,7 @@
 \usepackage{booktabs}  %% Pleasant tables
 \usepackage[binary-units]{siunitx}
 \usepackage[caption=false, font=footnotesize]{subfig}
+\usepackage{graphicx}
 
 %% Maths
 \renewcommand{\vec}{\mathbf}  % Bold vectors
@@ -98,7 +99,13 @@ Which states that the firing response of neuron $i$, $\delta_i$, to the represen
   \vec{\hat{x}} = \sum\limits_{i=1}^{N} a_i(\vec{x})\vec{d}_i
 \end{equation}
 
-Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum of the spiking activity of each neuron $a_i$ multiplied by the linear decoder for the neuron $\vec{d}_i$.  The decoding vectors $\vec{d}_i$ may be selected to compute a function of the value represented by the population.
+Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum of the spiking activity of each neuron $a_i$ multiplied by the linear decoder for the neuron $\vec{d}_i$.  The decoding vectors $\vec{d}_i$ may be selected to compute a function of the value represented by the population.  \figurename \ref{fig:background/nef-1} illustrates the encoding of a two-dimensional value using four neurons -- the role of the encoding vectors can be seen in that each neuron becomes active for only a small range of the input space.
+
+  \begin{figure}[!t]
+    \includegraphics{nef-1}
+    \caption{Representing a 2-dimensional value using four neurons.  The input values and spiking responses of the neurons are shown in the top plot.  The bottom left-hand plot shows how the firing responses vary to the angle of the 2-D input vector (tuning curves) and the bottom right-hand plot shows a decoding of the population's representation along with the input value.}
+    \label{fig:background/nef-1}
+  \end{figure}
 
 %% Synaptic filtering
 
