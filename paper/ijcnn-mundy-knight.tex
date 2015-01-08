@@ -24,6 +24,17 @@
 \usepackage[caption=false, font=footnotesize]{subfig}
 \usepackage{graphicx}
 
+%% Source highlighting
+\usepackage{listings}
+\lstset{
+  language=Python,
+  morekeywords={with,as},
+  columns=flexible,
+  gobble=2,
+  basicstyle=\footnotesize,
+  xleftmargin=1em,
+}
+
 %% Maths
 \renewcommand{\vec}{\mathbf}  % Bold vectors
 
@@ -115,15 +126,49 @@ The combination of encoders and decoders leads naturally to the connection weigh
   \omega_{ij} = \alpha_j \vec{d_i}\vec{e_j}
 \end{equation}
 
-With $i$ indexing neurons in the pre-synaptic population and $j$ those in the post-synaptic population.  The resultant connection matrix will typically be dense.  If the specific decoder chosen computes the identity function the network constructed is simply a \textit{communication channel}: the values represented by the pre-synaptic population will be transmitted to and represented by the post-synaptic population.
+With $i$ indexing neurons in the pre-synaptic population and $j$ those in the post-synaptic population.  The resultant connection matrix will typically be dense.
 
   \subsection{Assessing the Neural Engineering Framework (NEF)}
 
   TODO: Compare known facts about the NEF to SpiNNaker constraints.
 
+  \subsection{Constructing models with the NEF}
+
+Neural models built using the principals of the NEF may be implemented in any programming language, however, a standard Python library for building and simulating these models has been developed.  Nengo \parencite{Bekolay2014} provides several core components which may be used to specify models for simulation:
+
+  \begin{description}[\IEEEsetlabelwidth{Connections}]
+    \item[Ensembles] A population of neurons with their attendant encoders.
+    \item[Nodes] General purpose non-neural components, typically used to inject values into simulations or to drive real-world actuators.
+    \item[Connections] Specify how nodes and ensembles are connected.
+    \item[Probes] Allow gathering of simulation data for later analysis.
+  \end{description}
+
+  An illustrative model that we will use later in this paper is the \textit{communication channel}.  A communication channel consists of two ensembles connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble.  The concept is illustrated in \figurename~\ref{fig:background/comms-channel}.  Using Nengo a communication channel may be constructed as:
+
+  \begin{lstlisting}
+  with nengo.Network('Communication Channel') as comms_channel:
+      # 2 100 neuron ensembles, each of 2-dimensions
+      ens_a = nengo.Ensemble(100, 2)
+      ens_b = nengo.Ensemble(100, 2)
+
+      # Connection from A to B with the identity function
+      nengo.Connection(ens_a, ens_b)
+  \end{lstlisting}
+
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
 
+Previous sections discussed the manner in which neural networks are typically simulated on the SpiNNaker hardware, introduced the Neural Engineering Framework and have indicated the ways in which the NEF exceeds the design specification of the SpiNNaker hardware and software model.  In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
+
+The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.  In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores.  Considering the simple example of \figurename~\ref{fig:background/nef-1}, at each time-step the current activity of the population can be represented as either two values for the immediate decoding of the population or between zero and four values representing the indices of spiked neurons. Using the former (value-based) representation rather than the latter (spike-based) is beneficial as (1) in the majority of cases it will result in the transmission of fewer packets across the SpiNNaker network, and (2) less memory is required to store the vectors used for decoding and encoding values than would be required to store the weight matrices of every connection.  Reducing network usage reduces the likelihood of causing network links to become blocked, reducing the memory requirements of a simulation allows an increase in the number of neurons which may be simulated on a core and a reduction in the time required to load data on the SpiNNaker machine.  These gains are indicated by results in \S\ref{sec:results}.
+
+  \subsection{Communication protocol}
+
+  \subsection{Simulating neurons}
+
+  \subsection{Injecting and retrieving values}
+
   \section{Results}
+  \label{sec:results}
 
   \subsection{Processor utilisation}
 
@@ -132,6 +177,12 @@ With $i$ indexing neurons in the pre-synaptic population and $j$ those in the po
   \subsection{Network utilisation}
 
   \textbf{Network utilisation for communication channel, varying neuron count and dimensionality \color{red} Andrew}
+
+  \begin{figure}[!t]
+    \includegraphics{network-1}
+    \caption{}
+    \label{fig:results/network-utilisation}
+  \end{figure}
 
   \subsection{Memory utilisation}
 
