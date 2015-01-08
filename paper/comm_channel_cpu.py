@@ -4,6 +4,23 @@ from matplotlib import cm
 from matplotlib import pyplot
 import plot_settings
 
+def plot_contours(dimensions, ensemble_sizes, cpu_matrix):
+    # Plot contours
+    fig, axis = pyplot.subplots(figsize=(6,4))
+    contours = axis.contour(dimensions, ensemble_sizes, cpu_matrix.T, cmap=cm.coolwarm, levels = [0, 0.25, 0.5, 0.75, 1.0])
+    pyplot.clabel(contours)
+    
+ 
+    axis.set_xlabel("Number of dimensions")
+    axis.set_ylabel("Number of neurons per ensemble")
+    
+    # Use log2 scale for dimensions
+    axis.set_xscale('log', basex=2)
+   
+    # Use dimensions of data points for x ticks
+    axis.set_xticks(dimensions)
+    axis.set_xticklabels(dimensions)
+    
 with open("profile_paper.csv", "rb") as csvfile:
     csvreader = csv.reader(csvfile)
     
@@ -23,17 +40,7 @@ with open("profile_paper.csv", "rb") as csvfile:
     numpy.set_printoptions(linewidth=250)
     print cpu_matrix
     #print cpu_matrix
-    fig, axis = pyplot.subplots(figsize=(6,4))
     
-    contours = axis.contour(dimensions, ensemble_sizes, cpu_matrix.T, cmap=cm.coolwarm, levels = [0, 0.25, 0.5, 0.75, 1.0])
-    pyplot.clabel(contours)
-    
-    axis.set_xlabel("Number of dimensions")
-    axis.set_ylabel("Number of neurons per ensemble")
-    
-    axis.set_xscale('log', basex=2)
-    
-    axis.set_xticks(dimensions)
-    axis.set_xticklabels(dimensions)
+    plot_contours(dimensions, ensemble_sizes, cpu_matrix)
     
     pyplot.show()
