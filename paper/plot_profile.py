@@ -5,6 +5,7 @@ import pylab
 import plot_settings
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.interpolate import griddata
+import seaborn as sns
 
 def load_results(csv_filename):
     with open(csv_filename, "rb") as csv_file:
@@ -12,7 +13,7 @@ def load_results(csv_filename):
 
 def plot_contour(results, get_x_function, get_y_function, filter_function, title, x_label, y_label, filename):
      # Create single-axis figure
-    figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 3.5), frameon=False)
+    figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 3), frameon=False)
     
     # Generate x, y, z data
     filtered_results = [[get_x_function(r), get_y_function(r), float(r[6])] for r in results if filter_function(r)]
@@ -25,8 +26,9 @@ def plot_contour(results, get_x_function, get_y_function, filter_function, title
     yi = numpy.linspace(min(unzipped_results[1]), max(unzipped_results[1]))
     zi = griddata((unzipped_results[0], unzipped_results[1]), unzipped_results[2], (xi[None,:], yi[:,None]), method='cubic')
    
-    contours = axis.contour(xi, yi, zi, cmap=pylab.cm.gray, levels=[0.2, 0.4, 0.6, 0.8])
-    axis.clabel(contours)
+    contours = axis.contour(xi, yi, zi, cmap=sns.dark_palette('gray', as_cmap=True, n_colors=4, reverse=True), levels=[0.2, 0.4, 0.6, 0.8])
+    manual = [(8.0, 175), (2.5, 740), (4.0, 960), (6, 1140)]
+    axis.clabel(contours, fmt=lambda n: '{:.0f}%'.format(n*100), manual=manual)
 
     if title is not None:
         axis.set_title(title)
@@ -41,7 +43,7 @@ def plot_contour(results, get_x_function, get_y_function, filter_function, title
     axis.set_xticklabels(unzipped_results[0])
     
     # Save figure
-    figure.tight_layout(pad=0.5)
+    figure.tight_layout(pad=0.0)
     figure.savefig(filename)
      
 def plot_surface(results, get_x_function, get_y_function, filter_function, title, x_label, y_label, filename):
@@ -105,7 +107,7 @@ def plot_stack(results, get_x_function, filter_function, title, x_label, filenam
 
 def plot_stack_bar(results, get_x_function, filter_function, title, x_label, filename):
     # Create single-axis figure
-    figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 3.5), frameon=False)
+    figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 3), frameon=False)
     
     # Filter results
     filtered_results = [[get_x_function(r), float(r[7]) * 100.0, float(r[8]) * 100.0, float(r[9]) * 100.0] for r in results if filter_function(r)]
@@ -129,10 +131,10 @@ def plot_stack_bar(results, get_x_function, filter_function, title, x_label, fil
     axis.set_xticks(bar_x + (bar_width / 2.))
     axis.set_xticklabels(unzipped_results[0])
 
-    axis.legend()
+    axis.legend(loc='upper left')
     
     # Save figure
-    figure.tight_layout(pad=0.5)
+    figure.tight_layout(pad=0.0)
     figure.savefig(filename)
     
 # Load results CSV file
@@ -143,7 +145,7 @@ plot_stack_bar(results,
     lambda r: int(r[1]),
     lambda r: int(r[0]) == 16 and int(r[2]) == 0,
     None,
-    "Ensemble size",
+    "Number of neurons",
     "comm_channel_cpu_16d_bar.pdf")
 '''
 plot_stack(results, 
@@ -164,7 +166,7 @@ plot_contour(results,
     lambda r: int(r[2]) == 0,
     None,
     "Number of dimensions",
-    "Ensemble size",
+    "Number of neurons",
     "comm_channel_cpu_contour.pdf")
 
 pylab.show()
