@@ -98,35 +98,34 @@ It should be noted that time is also a factor \textit{prior} to the start of any
 
   \subsection{The Neural Engineering Framework}
 
-The Neural Engineering Framework (NEF) extends the concept of ``preferred-direction vectors'' \parencite{} to all neural populations. Each population is said to represent a vector within a particular space, with each neuron in that population firing in response to the similarity of the represented vector to its own ``encoding'' vector.  Using the notation of \textcite{Stewart2014} this may be expressed as:
+The Neural Engineering Framework (NEF) extends the concept of ``preferred-direction vectors'' \parencite{} to all neural populations. Each population represents a vector within a particular space (typically a hypersphere) and within that population, each neurons firing rate reflects the similarity of the represented vector to its own ``encoding'' vector. Using the notation of \textcite{Stewart2014} this may be expressed as:
 
 \begin{equation}
   \delta_{i}\left(\vec{x}\right) = G_{i}\left[ \alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i \right]
 \end{equation}
 
-Which states that the firing response of neuron $i$, $\delta_i$, to the represented value of $\vec{x}$ is the response of the neuron model to an input consisting of a randomly selected gain term ($\alpha_i$), the encoding vector for the neuron ($\vec{e}_i$) and a fixed bias current $J^{bias}_i$.  The process of ``encoding'' allows us to transform a variable in vector form into the spiking response of a population of neurons.  Correspondingly, ``decoding'' allows a transformation from the spiking actions of neurons into the domain of vectors.  Again using the notation of \textcite{Stewart2014} we can express this decoding process as:
+Which states that the firing response of neuron $i$, $\delta_i$, to the represented value of $\vec{x}$ is the response of the neuron model ($G_{i}$) to an input consisting of a randomly selected gain term ($\alpha_i$), the neurons encoding vector ($\vec{e}_i$) and a fixed bias current $J^{bias}_i$. The process of ``encoding'' allows us to transform a variable in vector form into the spiking response of a population of neurons. Correspondingly, ``decoding'' allows a transformation from the spiking actions of neurons into the domain of vectors. Again using the notation of \textcite{Stewart2014} we can express this decoding process as:
 
 \begin{equation}
   \vec{\hat{x}} = \sum\limits_{i=1}^{N} a_i(\vec{x})\vec{d}_i
 \end{equation}
 
-Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum of the spiking activity of each neuron $a_i$ multiplied by the linear decoder for the neuron $\vec{d}_i$.  The decoding vectors $\vec{d}_i$ may be selected to compute a function of the value represented by the population.  \figurename \ref{fig:background/nef-1} illustrates the encoding of a two-dimensional value using four neurons -- the role of the encoding vectors can be seen in that each neuron becomes active for only a small range of the input space.
+Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum of the spiking activity of each neuron $a_i$ multiplied by the linear decoder for the neuron $\vec{d}_i$. The decoding vectors $\vec{d}_i$ may be selected to compute a function of the value represented by the population. \figurename \ref{fig:background/nef-1} illustrates the encoding of a two-dimensional value using four neurons -- the role of the encoding vectors can be seen in that each neuron becomes active for only a small range of the input space.
 
   \begin{figure}[!t]
     \includegraphics{nef-1}
-    \caption{Representing a 2-dimensional value using four neurons.  The input values and spiking responses of the neurons are shown in the top plot.  The bottom left-hand plot shows how the firing responses vary to the angle of the 2-D input vector (tuning curves) and the bottom right-hand plot shows a decoding of the population's representation along with the input value.}
+    \caption{Representing a 2-dimensional value using four neurons. The input values and spiking responses of the neurons are shown in the top plot. The bottom left-hand plot shows how the firing responses vary to the angle of the 2-D input vector (tuning curves) and the bottom right-hand plot shows a decoding of the population's representation along with the input value.}
     \label{fig:background/nef-1}
   \end{figure}
 
 %% Synaptic filtering
-
-The combination of encoders and decoders leads naturally to the connection weights between any pair of neuronal populations. For a connection between a pair of populations the synaptic weights are given by the matrix product of the decoders of the pre-synaptic population and the encoders of the post-synaptic population \parencite{Stewart2014}:
+For a connection between a pair of populations, a, typically dense, synaptic weight matrix can be calculated by taking the matrix product of the pre-synaptic populations decoders and the post-synaptic populations encoders \parencite{Stewart2014}:
 
 \begin{equation}
   \omega_{ij} = \alpha_j \vec{d_i}\vec{e_j}
 \end{equation}
 
-With $i$ indexing neurons in the pre-synaptic population and $j$ those in the post-synaptic population.  The resultant connection matrix will typically be dense.
+With $i$ indexing neurons in the pre-synaptic population and $j$ those in the post-synaptic population.
 
   \subsection{Assessing the Neural Engineering Framework (NEF)}
 
@@ -134,7 +133,7 @@ With $i$ indexing neurons in the pre-synaptic population and $j$ those in the po
 
   \subsection{Constructing models with the NEF}
 
-Neural models built using the principals of the NEF may be implemented in any programming language, however, a standard Python library for building and simulating these models has been developed.  Nengo \parencite{Bekolay2014} provides several core components which may be used to specify models for simulation:
+Neural models built using the principals of the NEF may be implemented in any programming language, however, a standard Python library for building and simulating these models has been developed. Nengo \parencite{Bekolay2014} provides several core components which may be used to specify models for simulation:
 
   \begin{description}[\IEEEsetlabelwidth{Connections}]
     \item[Ensembles] A population of neurons with their attendant encoders.
@@ -143,7 +142,7 @@ Neural models built using the principals of the NEF may be implemented in any pr
     \item[Probes] Allow gathering of simulation data for later analysis.
   \end{description}
 
-  An illustrative model that we will use later in this paper is the \textit{communication channel}.  A communication channel consists of two ensembles connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble.  The concept is illustrated in \figurename~\ref{fig:background/comms-channel}.  Using Nengo a communication channel may be constructed as:
+  An illustrative model that we will use later in this paper is the \textit{communication channel}. A communication channel consists of two ensembles connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble. The concept is illustrated in \figurename~\ref{fig:background/comms-channel}. Using Nengo a communication channel may be constructed as:
 
   \begin{lstlisting}
   with nengo.Network('Communication Channel') as comms_channel:
@@ -157,9 +156,9 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
 
-Previous sections discussed the manner in which neural networks are typically simulated on the SpiNNaker hardware, introduced the Neural Engineering Framework and have indicated the ways in which the NEF exceeds the design specification of the SpiNNaker hardware and software model.  In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
+Previous sections discussed the manner in which neural networks are typically simulated on the SpiNNaker hardware, introduced the Neural Engineering Framework and have indicated the ways in which the NEF exceeds the design specification of the SpiNNaker hardware and software model. In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
 
-The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.  In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores.  Considering the simple example of \figurename~\ref{fig:background/nef-1}, at each time-step the current activity of the population can be represented as either two values for the immediate decoding of the population or between zero and four values representing the indices of spiked neurons. Using the former (value-based) representation rather than the latter (spike-based) is beneficial as (1) in the majority of cases it will result in the transmission of fewer packets across the SpiNNaker network, and (2) less memory is required to store the vectors used for decoding and encoding values than would be required to store the weight matrices of every connection.  Reducing network usage reduces the likelihood of causing network links to become blocked, reducing the memory requirements of a simulation allows an increase in the number of neurons which may be simulated on a core and a reduction in the time required to load data on the SpiNNaker machine.  These gains are indicated by results in \S\ref{sec:results}.
+The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors. In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores. Considering the simple example of \figurename~\ref{fig:background/nef-1}, at each time-step the current activity of the population can be represented as either two values for the immediate decoding of the population or between zero and four values representing the indices of spiked neurons. Using the former (value-based) representation rather than the latter (spike-based) is beneficial as (1) in the majority of cases it will result in the transmission of fewer packets across the SpiNNaker network, and (2) less memory is required to store the vectors used for decoding and encoding values than would be required to store the weight matrices of every connection. Reducing network usage reduces the likelihood of causing network links to become blocked, reducing the memory requirements of a simulation allows an increase in the number of neurons which may be simulated on a core and a reduction in the time required to load data on the SpiNNaker machine. These gains are indicated by results in \S\ref{sec:results}.
 
   \subsection{Communication protocol}
 
