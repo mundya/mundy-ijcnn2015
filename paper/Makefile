@@ -33,7 +33,8 @@ bib : all
 
 # Clean
 clean :
-	find . -type f -regex ".*$(texdoc).*\.\(aux\|bbl\|bcf\|blg\|log\|pdf\|png\|out\|toc\|lof\|lot\|count\)" -delete
+	find . -type f -regex ".*$(texdoc).*\.\(aux\|bbl\|bcf\|blg\|log\|png\|out\|toc\|lof\|lot\|count\)" -delete
+	rm -f $(texdoc).pdf $(texdoc).run.xml $(texdoc)-blx.bib
 
 # Count
 count:
