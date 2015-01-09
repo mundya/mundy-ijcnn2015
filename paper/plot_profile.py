@@ -41,6 +41,8 @@ def plot_contour(results, get_x_function, get_y_function, filter_function, title
     # Use dimensions of data points for x ticks
     axis.set_xticks(unzipped_results[0])
     axis.set_xticklabels(unzipped_results[0])
+
+    axis.set_yticks([0, 250, 500, 750, 1000, 1250, 1500, 1750, 2000])
     
     # Save figure
     figure.tight_layout(pad=0.0)
