@@ -11,12 +11,15 @@ def load_results(csv_filename):
     with open(csv_filename, "rb") as csv_file:
         return list(csv.reader(csv_file))
 
-def plot_contour(results, get_x_function, get_y_function, filter_function, title, x_label, y_label, filename):
+def plot_contour(results, get_x_function, get_y_function, filter_function, title, x_label, y_label, filename, include_output):
      # Create single-axis figure
     figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 3), frameon=False)
     
     # Generate x, y, z data
-    filtered_results = [[get_x_function(r), get_y_function(r), float(r[6])] for r in results if filter_function(r)]
+    if include_output:
+        filtered_results = [[get_x_function(r), get_y_function(r), float(r[6])] for r in results if filter_function(r)]
+    else:
+        filtered_results = [[get_x_function(r), get_y_function(r), float(r[6]) - float(r[9])] for r in results if filter_function(r)]
     
     # Sort tuples and unzip into stackplot friendly form
     filtered_results.sort()
@@ -24,6 +27,7 @@ def plot_contour(results, get_x_function, get_y_function, filter_function, title
     
     xi = numpy.linspace(min(unzipped_results[0]), max(unzipped_results[0]))
     yi = numpy.linspace(min(unzipped_results[1]), max(unzipped_results[1]))
+    
     zi = griddata((unzipped_results[0], unzipped_results[1]), unzipped_results[2], (xi[None,:], yi[:,None]), method='cubic')
    
     contours = axis.contour(xi, yi, zi, cmap=sns.dark_palette('gray', as_cmap=True, n_colors=4, reverse=True), levels=[0.2, 0.4, 0.6, 0.8])
@@ -169,6 +173,17 @@ plot_contour(results,
     None,
     "Number of dimensions",
     "Number of neurons",
-    "comm_channel_cpu_contour.pdf")
+    "comm_channel_cpu_contour.pdf",
+    True)
+
+plot_contour(results,
+    lambda r: int(r[0]),
+    lambda r: int(r[1]),
+    lambda r: int(r[2]) == 0,
+    None,
+    "Number of dimensions",
+    "Number of neurons",
+    "comm_channel_cpu_contour_no_output.pdf",
+    False)
 
 pylab.show()
