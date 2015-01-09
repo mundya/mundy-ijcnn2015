@@ -103,6 +103,7 @@ The Neural Engineering Framework (NEF) extends the concept of ``preferred-direct
 
 \begin{equation}
   \delta_{i}\left(\vec{x}\right) = G_{i}\left[ \alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i \right]
+  \label{eq:encoding}
 \end{equation}
 
 Which states that the firing response of neuron $i$, $\delta_i$, to the represented value of $\vec{x}$ is the response of the neuron model ($G_{i}$) to an input consisting of a randomly selected gain term ($\alpha_i$), the neurons encoding vector ($\vec{e}_i$) and a fixed bias current $J^{bias}_i$. The process of ``encoding'' allows us to transform a variable in vector form into the spiking response of a population of neurons. Correspondingly, ``decoding'' allows a transformation from the spiking actions of neurons into the domain of vectors. Again using the notation of \textcite{Stewart2014} we can express this decoding process as:
@@ -157,13 +158,20 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
 
-Previous sections discussed the manner in which neural networks are typically simulated on the SpiNNaker hardware, introduced the Neural Engineering Framework and have indicated the ways in which the NEF exceeds the design specification of the SpiNNaker hardware and software model. In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
+  Previous sections discussed the manner in which neural networks are typically simulated on the SpiNNaker hardware, introduced the Neural Engineering Framework and have indicated the ways in which the NEF exceeds the design specification of the SpiNNaker hardware and software model.
+  In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
 
-The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors. In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores. Considering the simple example of \figurename~\ref{fig:background/nef-1}, at each time-step the current activity of the population can be represented as either two values for the immediate decoding of the population or between zero and four values representing the indices of spiked neurons. Using the former (value-based) representation rather than the latter (spike-based) is beneficial as (1) in the majority of cases it will result in the transmission of fewer packets across the SpiNNaker network, and (2) less memory is required to store the vectors used for decoding and encoding values than would be required to store the weight matrices of every connection. Reducing network usage reduces the likelihood of causing network links to become blocked, reducing the memory requirements of a simulation allows an increase in the number of neurons which may be simulated on a core and a reduction in the time required to load data on the SpiNNaker machine. These gains are indicated by results in \S\ref{sec:results}.
+  The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.
+  In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores.
 
-  \subsection{Simulating neurons}
-
-As when simulating standard neural nets on SpiNNaker (\S\ref{sef:background/nn}) each processing core is assigned a number of point neurons. When one of these neurons fires the decoder vector for the neuron is looked up and added to a buffer storing the immediate decoding of the population (see (\ref{eq:decoding})). Once per time-step each element of the buffer is transmitted in the payload of a multicast packet to all the cores which receive connections from this population. The key of one of these ``value'' packets is constructed such that the packet reaches all intended cores and that the index of the element of the vector can be deduced. On receipt of a value-packet a core inspects the key to determine in which synaptic filter the value should be included and to which element it should be added. At the start of the next simulation time-step the synaptic filters are executed to generate the current input to the ensemble. On simulating each neuron the current input is encoded using that neuron's encoding vector to form the input to the neuron.
+  When a neural population, such as that of \figurename~\ref{fig:background/nef-1}, is being simulated the state of each neuron is updated in turn.
+  Firstly, the input for the neuron is calculated by calculating the dot product between the encoding vector for the neuron and the current input to the population ($\alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i$ from (\ref{eq:encoding})), and this is used to update the neuron model (the transfer function $G$ from (\ref{eq:encoding})).
+  If a neuron spikes then its decoding vector ($\vec{d}_i$) is looked up and added to a buffer containing the current decoding of the population activity (\ref{eq:decoding}).
+  Once all neurons have been simulated the output buffer contains a vector which represents the weighted decoding of any spikes which occurred during the simulation step.
+  Each element of this vector is then transmitted in the payload of a multicast packet with a key which uniquely identifies the population, decoding vector and index of the value.
+  The communication fabric routes these ``value'' packets to cores which simulate connected populations of neurons.
+  On receipt of a packet a core inspects the key to determine to which element of which synaptic filter the value contained within the payload must be added.
+  These filters are updated at the start of the next simulation step and provide the input vector which drives subsequent neural activity.
 
   \subsection{Injecting and retrieving values}
 
