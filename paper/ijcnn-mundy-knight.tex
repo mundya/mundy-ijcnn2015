@@ -98,6 +98,7 @@ To a first approximation the first constraint is that the synaptic matrices for 
 It should be noted that time is also a factor \textit{prior} to the start of any simulation. All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, consequently the more data required on the machine the greater the time required to prepare it for simulation. \textcite{Sharp2013} note that this can take a significant period of time and that this is undesirable if a real-time simulator is desired.
 
   \subsection{The Neural Engineering Framework}
+  \label{sef:background/nef}
 
 The Neural Engineering Framework (NEF) extends the concept of ``preferred-direction vectors'' \parencite{} to all neural populations. Each population represents a vector within a particular space (typically a hypersphere) and within that population, each neurons firing rate reflects the similarity of the represented vector to its own ``encoding'' vector. Using the notation of \textcite{Stewart2014} this may be expressed as:
 
@@ -130,7 +131,23 @@ With $i$ indexing neurons in the pre-synaptic population and $j$ those in the po
 
   \subsection{Assessing the Neural Engineering Framework (NEF)}
 
-  TODO: Compare known facts about the NEF to SpiNNaker constraints.
+As discussed in \S\ref{sef:background/nef}, it is entirely possible to translate models built using NEF principles into populations of point neurons, connected with dense synaptic weight matrices. These networks could then, in theory, be simulated using the standard SpiNNaker spiking neural network simulator described in \S\ref{sef:background/nn}. However, in this section, we show that, based on parameters used in the Spaun functional brain model, this approach would be sub-optimal when the constraints of the SpiNNaker platform outlined in \S\ref{sef:background/nn} are taken into account.
+
+The Spaun model is built using the Semantic Pointer Architecture (SPA) \parencite{eliasmith2013build} which uses randomly chosen NEF unit vectors to represent basic concepts ($MOUSE$, $CHEESE$, $SUBJECT$, $OBJECT$, $EAT$, $VERB$). These concepts can then be combined into symbol structures using addition~($+$) and circular convolution~($\otimes$) operators, both functions being performed which are evaluated using the NEF. The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasmith2013build} demonstrates, require around 70 neurons per-dimension to calculate accurately.
+
+Using basic concepts represented as vectors and the two operators, a semantic pointer representing the sentence ``Mice eat cheese'' can be calculated as $S=MOUSE \otimes SUBJECT + EAT \otimes VERB + CHEESE \otimes OBJECT$. The subject of this sentence could then be extracted using $S \otimes SUBJECT^{-1} \approx MOUSE$. However, this later process is relatively noisy, meaning that, in order to extract the $MOUSE$ semantic pointer, the result needs to be ``cleaned up''. This process is performed using an auto-associative memory network \parencite{Stewart2011}, the properties of which dictate that in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
+
+On the basis of these two parameters, we can determine that, functions on these vectors must be evaluated using $3.5\times10^4$ neuron populations, two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries. Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, meaning that the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}. This means that, as each core only has \SI{8}{\mebi\byte} of SDRAM, each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- Several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
+
+%* Each core only left simulating 59 neurons - Design target 1000 **CITE**
+%* 42373 cores to fit Spaun = 2649 chips = 56 48-node SpiNNaker boards
+%
+%Incoming spikes - 5000/ms
+%--------------------------
+%* Each of these cores would have 2*10^6 synapses
+%
+%Outgoing spikes - 10/ms
+%------------------------
 
   \subsection{Constructing models with the NEF}
 
@@ -174,6 +191,18 @@ As when simulating standard neural nets on SpiNNaker (\S\ref{sef:background/nn})
 
   \textbf{Processor utilisation for communication channel (show variation with dimensionality and neuron count) \color{red} Jamie}
 
+  \begin{figure}[!t]
+    \includegraphics{comm_channel_cpu_16d_bar}
+    \caption{}
+    \label{fig:results/comm-channel-cpu-16d}
+  \end{figure}
+  
+  \begin{figure}[!t]
+    \includegraphics{comm_channel_cpu_contour}
+    \caption{}
+    \label{fig:results/comm-channel-cpu-contour}
+  \end{figure}
+  
   \subsection{Network utilisation}
 
   \textbf{Network utilisation for communication channel, varying neuron count and dimensionality \color{red} Andrew}
