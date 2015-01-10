@@ -158,20 +158,24 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
 
-  Previous sections discussed the manner in which neural networks are typically simulated on the SpiNNaker hardware, introduced the Neural Engineering Framework and have indicated the ways in which the NEF exceeds the design specification of the SpiNNaker hardware and software model.
+  Previous sections have illustrated how use of the NEF can be expected to result in networks which are not amenable to efficient implementation using the standard SpiNNaker paradigm.
   In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
-
   The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.
   In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores.
 
-  When a neural population, such as that of \figurename~\ref{fig:background/nef-1}, is being simulated the state of each neuron is updated in turn.
-  Firstly, the input for the neuron is calculated by calculating the dot product between the encoding vector for the neuron and the current input to the population ($\alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i$ from (\ref{eq:encoding})), and this is used to update the neuron model (the transfer function $G$ from (\ref{eq:encoding})).
-  If a neuron spikes then its decoding vector ($\vec{d}_i$) is looked up and added to a buffer containing the current decoding of the population activity (\ref{eq:decoding}).
-  Once all neurons have been simulated the output buffer contains a vector which represents the weighted decoding of any spikes which occurred during the simulation step.
-  Each element of this vector is then transmitted in the payload of a multicast packet with a key which uniquely identifies the population, decoding vector and index of the value.
+  We split the execution time of a processing core into three steps: \textit{input filtering}, \textit{neuron update} and \textit{output}.
+  In the old simulation scheme the ``inputs'' to a processing core were in the form of ``spike'' packets which were used to drive a pipeline which retrieved synaptic weights from SDRAM; in our new scheme the inputs take the form of a set of packets whose payloads can be combined to form a vector.
+  For example, the processing core simulating population $B$ from \figurename~\ref{fig:background/comms-channel} will receive two packets per time-step from each of the two cores simulating population $A$ -- combining these packets will form a 2-D vector representing the current decoding of the activity of $A$.
+  At the start of each simulation step the values which were received in this manner are filtered using the appropriate synaptic filter model and then summed to form a single vector which is the current input to the population -- this forms the \textit{input filtering} step.
+
+  During the \textit{neuron update} step the state of each neuron is updated in turn.
+  First the input for the neuron is computed by calculating the dot product between the encoding vector for the neuron and the current input to the population ($\alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i$ from (\ref{eq:encoding})).
+  Then the neuron itself is simulated, for example using the Euler method to compute the next state of a LIF neuron.
+  If, during this process, a neuron spikes then its decoding vector ($\vec{d}_i$) is looked up and added to a buffer containing the current decoding of the population activity (as in (\ref{eq:decoding})).
+  Once all the neurons have been simulated the output buffer contains a vector which represents the weighted decoding of any spikes which occurred during the simulation step.
+
+  During the \textit{output} stage each element of the output buffer vector is transmitted in the payload of a multicast packet with a key which uniquely identifies the population, decoding vector and element index.
   The communication fabric routes these ``value'' packets to cores which simulate connected populations of neurons.
-  On receipt of a packet a core inspects the key to determine to which element of which synaptic filter the value contained within the payload must be added.
-  These filters are updated at the start of the next simulation step and provide the input vector which drives subsequent neural activity.
 
   \subsection{Injecting and retrieving values}
 
