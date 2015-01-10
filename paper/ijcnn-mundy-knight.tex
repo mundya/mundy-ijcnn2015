@@ -23,6 +23,7 @@
 \usepackage[binary-units]{siunitx}
 \usepackage[caption=false, font=footnotesize]{subfig}
 \usepackage{graphicx}
+\usepackage[mode=buildnew]{standalone}
 
 %% Source highlighting
 \usepackage{listings}
@@ -155,6 +156,16 @@ Neural models built using the principals of the NEF may be implemented in any pr
       # Connection from A to B with the identity function
       nengo.Connection(ens_a, ens_b)
   \end{lstlisting}
+
+  \begin{figure}
+    \centering
+    \includestandalone{figures/comms_channel_map}
+    \caption{A NEF communication channel consisting of two populations of neurons and a connection.
+             The diagram indicates how the abstract communication channel might be instantiated on a simplified representation of the SpiNNaker architecture:
+             Population $A$ is split between processing two cores, consequently two streams of multicast packets allow simulation of the communication channel.
+    }
+    \label{fig:background/comms-channel}
+  \end{figure}
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
 
