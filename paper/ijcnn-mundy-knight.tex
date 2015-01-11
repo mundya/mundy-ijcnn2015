@@ -258,7 +258,7 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
   \textcite{Galluppi2012} demonstrated a mapping from models written in Nengo to the SpiNNaker architecture using the older simulation method described in \S\ref{sef:background/nn}.
   This implementation also used the encoding/decoding processes to reduce communication overheads between computational elements, but, unlike the method presented here, only applied it to communication between SpiNNaker and an external computer.
-  Instead, use of spike-based transmission necessitated the storage of complete weight matrices and this led to a significant amount of time being required to transfer simulation data to the SpiNNaker machine, \citeauthor{Galluppi2012} suggested that this may be overcome by transmitting encoders and decoders separately and performing the matrix multiplication on SpiNNaker.
+  Instead, use of spike-based transmission necessitated the storage of complete weight matrices and led to a significant amount of time being required to transfer simulation data to the SpiNNaker machine, \citeauthor{Galluppi2012} suggested that this may be overcome by transmitting encoders and decoders separately and performing the matrix multiplication on SpiNNaker.
   This would have reduced the load time but would not have solved the problem of the synaptic matrices filling the usable memory, nor the associated issues of spike rates and network usage.
   For the reasons advanced above we believe that this implementation of the NEF on SpiNNaker would not have satisfactorily scaled to simulate models of the scale or complexity of Spaun.
 
@@ -280,6 +280,10 @@ Neural models built using the principals of the NEF may be implemented in any pr
   Despite this the particular advantages of SpiNNaker (low-power and real-time) suggest that it is a good choice of platform on which to simulate large-scale neural models.
 
   \subsection{Future work}
+
+  This work has laid the basis for simulating truly large-scale models built using the NEF in biological real-time.
+  Several improvements are planned which should enable a greater number of neurons to fit on a single core and we anticipate the implementation of further neuron and synapse models.
+  The computational gains of value-based transmission for implementing learning rules are also to be assessed.
 
   \section{Conclusion}
 
