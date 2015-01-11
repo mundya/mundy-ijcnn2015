@@ -47,7 +47,7 @@
 \renewcommand{\vec}{\mathbf}  % Bold vectors
 
 %% Bibliographies
-\usepackage[backend=bibtex, style=ieee, doi=false, url=false]{biblatex}
+\usepackage[backend=bibtex, style=ieee, doi=false, url=false, maxbibnames=7]{biblatex}
 \bibliography{paper}
 \usepackage{xcolor}
 
@@ -248,10 +248,38 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \textbf{Memory utilisation for comms channel and basal ganglia model with varying scale \color{red} Andrew}
 
   \subsection{Simulating large-scale models}
+  \label{sec:spa-sequence}
 
   \textbf{Simulation results from SPA sequence, indicate compute/load time \color{red} Both, discuss first.}
 
   \section{Discussion}
+
+  \subsection{Comparison to prior SpiNNaker implementations}
+
+  \textcite{Galluppi2012} demonstrated a mapping from models written in Nengo to the SpiNNaker architecture using the older simulation method described in \S\ref{sef:background/nn}.
+  This implementation also used the encoding/decoding processes to reduce communication overheads between computational elements, but, unlike the method presented here, only applied it to communication between SpiNNaker and an external computer.
+  Instead, use of spike-based transmission necessitated the storage of complete weight matrices and this led to a significant amount of time being required to transfer simulation data to the SpiNNaker machine, \citeauthor{Galluppi2012} suggested that this may be overcome by transmitting encoders and decoders separately and performing the matrix multiplication on SpiNNaker.
+  This would have reduced the load time but would not have solved the problem of the synaptic matrices filling the usable memory, nor the associated issues of spike rates and network usage.
+  For the reasons advanced above we believe that this implementation of the NEF on SpiNNaker would not have satisfactorily scaled to simulate models of the scale or complexity of Spaun.
+
+  \subsection{Comparison to other neuromorphic simulators}
+
+  SpiNNaker is but one of a range of neuromorphic simulators, a family including both analogue (e.g., Neurogrid \parencite{Benjamin2014}, BrainScaleS \parencite{Schemmel2010}) and digital (e.g., TrueNorth \parencite{Merolla2014}) hardware, which aim to reduce the power consumption and execution time for simulating large neural models.
+  Of these, the analogue simulators can be expected to require less power than SpiNNaker for a given scale of model \parencite{Stromatias2013} and to be able simulate faster than biological real-time; however, they are limited to simulating neurons and synapses of the type cast in silicon whereas SpiNNaker may be reprogrammed as required to investigate new models and learning rules.
+
+  \subsection{Comparison to general purpose computer simulators}
+
+  \S\ref{sec:spa-sequence} illustrated how the SpiNNaker compared to the Python implementation of Nengo when simulating models of a communication channel and a more complicated example highlighting features of the NEF and SPA.
+  For some scales of models it may be expected that the overheads of specialised hardware (including SpiNNaker) are sufficiently great that simulation on standard computing hardware and GPUs can be expected to be faster.
+  When this is the case, the Python implementation of Nengo of \textcite[\S6]{Bekolay2014} is shown to compare favourably with several standard neural simulators (Brian \parencite{Goodman2009}, NEURON \parencite{Hines2009} and NEST \parencite{Eppler2009}) on a range of networks, and an OpenCL implementation of Nengo is shown to perform even better but is only demonstrated on feed-forward networks.
+  However, when simulating models on the scale of Spaun we expect the simulation scheme detailed in this paper to provide substantial speed improvements over standard computing hardware even when the overheads are taken into account; moreover as SpiNNaker is a real-time simulator we expect it to perform well in conjunction with neuromorphic sensors or actuators.
+
+  \subsection{General applicability of the algorithm}
+
+  SpiNNaker is a example of a message passing architecture -- consequently we expect that our simulation scheme, transmitting decodings of ensemble activity rather than spike activity, to be equally applicable to simulating neural nets on any message passing distributed architecture.
+  Despite this the particular advantages of SpiNNaker (low-power and real-time) suggest that it is a good choice of platform on which to simulate large-scale neural models.
+
+  \subsection{Future work}
 
   \section{Conclusion}
 
