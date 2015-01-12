@@ -122,12 +122,17 @@ def plot_stack_bar(results, get_x_function, filter_function, title, x_label, fil
     filtered_results.sort()
     unzipped_results = zip(*filtered_results)
 
-    bar_x = numpy.arange(len(unzipped_results[0]))
+    bar_pad = 0.1
+    bar_x = bar_pad + numpy.arange(len(unzipped_results[0]))
     bar_width = 0.5
     
-    axis.bar(bar_x, unzipped_results[1], width=bar_width, label="Input filtering", color="0.25")
-    axis.bar(bar_x, unzipped_results[2], bottom=unzipped_results[1], width=bar_width, label="Neuron update", color="0.5")
-    axis.bar(bar_x, unzipped_results[3], bottom=unzipped_results[2], width=bar_width, label="Output", color="0.75")
+    cmap = sns.color_palette("colorblind")
+    axis.bar(bar_x, unzipped_results[1], label="Input filtering", color=cmap[0],
+             width=bar_width, edgecolor="none")
+    axis.bar(bar_x, unzipped_results[2], bottom=unzipped_results[1], label="Neuron update", color=cmap[1],
+             width=bar_width, edgecolor="none")
+    axis.bar(bar_x, unzipped_results[3], bottom=unzipped_results[2], label="Output", color=cmap[2],
+             width=bar_width, edgecolor="none")
     
     if title is not None:
         axis.set_title(title)

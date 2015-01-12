@@ -12,8 +12,7 @@ reference = [
 
 # Times from nengo spinnaker
 spinnaker = [
-    ("build", [ 2.0, 4.7 ]),
-    ("pacman", [ 9.6 - 5.0, 15.3 - 5.0 ]),
+    ("build", [ 2.0 + (9.6 - 5.0), 4.7 + (15.3 - 5.0)]),
     ("load", [ 3.7, 10.1 ]),
     ("simulate", [ 14.5, 16.6 ]),
     ("download", [ 3.15, 5.3 ])
@@ -22,25 +21,25 @@ spinnaker = [
 # Create single-axis figure
 figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 3), frameon=False)
 
+bar_pad = 0.1
 bar_width = 0.5
-bar_x = numpy.arange(2) * 1.5
+bar_x = bar_pad + numpy.arange(2) * 1.5
 
 # Colour strings
+cmap = sns.color_palette("colorblind")
 colours = {
-    "build" : "0.1666",
-    "pacman" : "0.3333",
-    "load" : "0.5",
-    "simulate" : "0.666",
-    "download" : "0.833"
+    "build" : cmap[0],
+    "load" : cmap[1],
+    "simulate" : cmap[2],
+    "download" : cmap[3]
 }
 
 # Full labels
 labels = {
-    "build" : "Generation of network",
-    "pacman" : "Generation of SpiNNaker data",
-    "load" : "Uploading onto SpiNNaker",
+    "build" : "Generation",
+    "load" : "Uploading",
     "simulate" : "Simulation",
-    "download" : "Downloading from SpiNNaker"
+    "download" : "Downloading"
 }
 
 # Draw an array of name, time tuples as a load of stacked bars
@@ -48,17 +47,18 @@ def stack(data, offset, legend):
     # Loop through stack
     bottom = numpy.zeros(2)
     for (key, times) in data:
-        axis.bar(bar_x + offset, times, bottom=bottom, width=bar_width, label=labels[key] if legend else "_", color=colours[key])
+        axis.bar(bar_x + offset, times, bottom=bottom, label=labels[key] if legend else "_", color=colours[key],
+                 width=bar_width, edgecolor="none")
         bottom += times
 
 # Draw stacked bars
 stack(reference, 0.0, False)
-stack(spinnaker, bar_width, True)
+stack(spinnaker, bar_width + 0.05, True)
 
 axis.set_ylabel("Time / seconds")
 
 axis.set_xticks(bar_x + bar_width)
-axis.set_xticklabels(["16 dimensions, 8 actions", "32 dimensions, 16 actions"])
+axis.set_xticklabels(["16 dimensions\n8 actions", "32 dimensions\n16 actions"])
 
 axis.legend(loc="upper left")
 
