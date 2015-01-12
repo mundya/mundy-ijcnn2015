@@ -23,6 +23,7 @@ figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 3), frameon=F
 
 bar_pad = 0.1
 bar_width = 0.5
+bar_spacing = 0.05
 bar_x = bar_pad + numpy.arange(2) * 1.5
 
 # Colour strings
@@ -53,17 +54,26 @@ def stack(data, offset, legend):
 
 # Draw stacked bars
 stack(reference, 0.0, False)
-stack(spinnaker, bar_width + 0.05, True)
+stack(spinnaker, bar_width + bar_spacing, True)
 
 axis.set_ylabel("Time / seconds")
 
-axis.set_xticks(bar_x + bar_width)
-axis.set_xticklabels(["16 dimensions\n8 actions", "32 dimensions\n16 actions"])
+box = axis.get_position()
+axis.set_position([box.x0, 0.2, box.width, 0.7])
+    
+# Combine bar positions to get tick positions
+ticks = numpy.concatenate((bar_x, bar_x + bar_width + bar_spacing))
+ticks = numpy.sort(ticks + (bar_width / 2.0))
+axis.set_xticks(ticks)
+axis.set_xticklabels(["Nengo", "SpiNNaker", "Nengo", "SpiNNaker"], size="xx-small")
+
+axis.text(bar_x[0] + bar_width, -35.0, "16 dimensions\n8 actions", horizontalalignment="center", size="small")
+axis.text(bar_x[1] + bar_width, -35.0, "32 dimensions\n16 actions", horizontalalignment="center", size="small")
 
 axis.legend(loc="upper left")
 
 # Save figure
-figure.tight_layout(pad=0.0)
+#figure.tight_layout(pad=0.0)
 figure.savefig("spa_wall_clock.pdf")
    
 pylab.show()

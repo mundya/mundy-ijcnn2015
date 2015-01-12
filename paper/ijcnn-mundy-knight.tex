@@ -141,6 +141,7 @@ For a connection between a pair of populations, a, typically dense, synaptic wei
 With $i$ indexing neurons in the pre-synaptic population and $j$ those in the post-synaptic population.
 
   \subsection{Assessing the Neural Engineering Framework (NEF)}
+  \label{sef:background/assessing}
 
 As discussed in \S\ref{sef:background/nef}, it is entirely possible to translate models built using NEF principles into populations of point neurons, connected with dense synaptic weight matrices. These networks could then, in theory, be simulated using the standard SpiNNaker spiking neural network simulator described in \S\ref{sef:background/nn}. However, in this section, we show that, based on parameters used in the Spaun functional brain model, this approach would be sub-optimal when the constraints of the SpiNNaker platform outlined in \S\ref{sef:background/nn} are taken into account.
 
@@ -254,8 +255,20 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \subsection{Simulating large-scale models}
   \label{sec:spa-sequence}
 
-  \textbf{Simulation results from SPA sequence, indicate compute/load time \color{red} Both, discuss first.}
+In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by Stewart, Choo and Eliasmith \parencite{}. 
+In our benchmark, we configure the Basal Ganglia portion of this model to select from a list of semantic pointers and then, based on this, use Thalamus to emit the ``next'' semantic pointer in the list. By recurrently connecting the output of the Thalamus to the input of the Basal Ganglia, our network then iterates through the list of semantic pointers as shown in figure~\ref{fig:results/sequence}.
+
+To demonstrate how the performance of our new SpiNNaker simulator scales, we simulated this network at two different scales, with 8 element sequences encoded using 16 dimensional semantic pointers and with 16 element sequences encoding using 32 dimensional semantic pointers. Figure~\ref{fig:results/spa-wall-clock} shows We ran both of these simulations for 10s using both the Nengo reference simulator \parencite{Bekolay2014} and our new SpiNNaker simulator and measuire
+%58 cores
+%113 cores
+\ref{fig:results/spa-wall-clock}
   
+  \begin{figure}[!t]
+    \includegraphics{figures/sequence}
+    \caption{Comparing the output of the action selection and a list of 4 semantic pointers, labelled $A$, $B$, $C$ and $D$ - showing sequence behaviour.}
+    \label{fig:results/sequence}
+  \end{figure}
+
   \begin{figure}[!t]
     \includegraphics{figures/spa_wall_clock}
     \caption{}
