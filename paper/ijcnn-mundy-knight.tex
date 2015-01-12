@@ -62,7 +62,9 @@ Building and simulating neural systems is a promising avenue in our search for u
 
   \section{Introduction}
 
-For a given power budget, two factors limit the simulation of neural networks on any computing platform: scale and time. In principle any scale of network may be simulated but as scale increases simulation time follows. Conversely, if the simulation time is limited (for example, if biological real-time is necessary) then only a limited scale of network may be simulated. Specialised ``neuromorphic'' hardware tries to avoid these constraints by parallelising and distributing computational effort and relying on dense interconnection of the computing elements. The SpiNNaker platform \parencite{Furber2014} is one of a range of neuromorphic simulators (including NeuroGrid \parencite{}, FACETS \parencite{} and lately TrueNorth \parencite{}) which should benefit investigators of embodied cognition and researchers of large neural models alike by enabling scalable, rapid simulation of large-scale neural networks.
+For a given power budget, two factors limit the simulation of neural networks on any computing platform: scale and time. In principle any scale of network may be simulated but as scale increases simulation time follows.
+Conversely, if the simulation time is limited (for example, if biological real-time is necessary) then only a limited scale of network may be simulated. Specialised ``neuromorphic'' hardware tries to avoid these constraints by parallelising and distributing computational effort and relying on dense interconnection of the computing elements.
+The SpiNNaker platform \parencite{Furber2014} is one of a range of neuromorphic simulators (including Neurogrid \parencite{Benjamin2014}, BrainScaleS \parencite{Schemmel2010} and lately TrueNorth \parencite{Merolla2014}) which should benefit investigators of embodied cognition and researchers of large neural models alike by enabling scalable, rapid simulation of large-scale neural networks.
 
 The Neural Engineering Framework (NEF) \parencite{Eliasmith2004} is a hypothesis about how neurons may act to encode the abstract mathematical constructs, such as scalars and vectors, that we often use in modelling the real world. Its successes so far include the Spaun model of cognition \parencite{Eliasmith2012} and applications in embedded robotics (e.g., \parencite{Stewart2015ip}). As with all neural systems, the NEF has proven costly to simulate with simulations of the Spaun model typically taking \SI{2.5}{\hour} of simulation time for \SI{1}{\second} of simulation \parencite[\S V]{Stewart2014}. Two aspects of NEF networks that make them particularily costly to simulate are the high firing rates of individual neurons (around \SIrange{200}{400}{\hertz} when saturated) and the dense synaptic matrices used to connect neuronal populations. The former presents a significant communication cost to any specialised neuromorphic hardware and the latter requires that large amounts of memory be used to represent the neural network with all the associated costs of transferring large blocks of data that implies.
 
@@ -212,7 +214,9 @@ Neural models built using the principals of the NEF may be implemented in any pr
   During the \textit{output} stage each element of the output buffer vector is transmitted in the payload of a multicast packet with a key which uniquely identifies the population, decoding vector and element index.
   The communication fabric routes these ``value'' packets to cores which simulate connected populations of neurons.
 
-  \subsection{Injecting and retrieving values}
+  Some ensembles may have multiple outgoing connections with different transformations or functions, as a result there are multiple decoder matrices which need to be applied when decoding the activity of the population.
+  In these cases we combine the matrices such that the decoding vector for any neuron is the concatenation of the required decoders
+  (i.e., $\vec{d}_i = \left[\vec{d}_i^{f(\vec{x})},\,\vec{d}_i^{g(\vec{x})},\,\ldots \right]$).
 
   \section{Results}
   \label{sec:results}
@@ -283,12 +287,13 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
   This work has laid the basis for simulating truly large-scale models built using the NEF in biological real-time.
   Several improvements are planned which should enable a greater number of neurons to fit on a single core and we anticipate the implementation of further neuron and synapse models.
-  The computational gains of value-based transmission for implementing learning rules are also to be assessed.
+  In particular, our current implementation only allows for one encoder per neuron and this is likely to be limiting in light of learning rules (e.g., \parencite{Voelker2014}) which act to modify weights in encoders.
+  We also intend to better assess the computational cost or gain of value-based transmission on implementing learning rules and a constant traffic pattern affects the SpiNNaker network architecture.
 
   \section{Conclusion}
 
   This paper has shown how several properties of the NEF lead to inefficient use of the SpiNNaker computing architecture.
-  We have described and assessed an alternative approach to simulating models built using the NEF on SpiNNaker that enable it to reach the design target of 1000 neurons per core without exceeding the network capacity or becoming memory bound.
+  We have described and assessed an alternative approach to simulating models built using the NEF on SpiNNaker that enable it to exceed the design target of 1000 neurons per core without exceeding the network capacity or becoming memory bound.
   Our intent is to use this new implementation of the NEF for SpiNNaker to simulate the full Spaun-model in biological real-time, and to investigate models of greater scale and complexity.
 
   \section*{Acknowledgements}
