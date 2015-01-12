@@ -162,7 +162,7 @@ On the basis of these two parameters, we can determine that, functions on these 
 %------------------------
 
   \subsection{Constructing models with the NEF}
-
+\label{sef:background/constructing}
 Neural models built using the principals of the NEF may be implemented in any programming language, however, a standard Python library for building and simulating these models has been developed. Nengo \parencite{Bekolay2014} provides several core components which may be used to specify models for simulation:
 
   \begin{description}[\IEEEsetlabelwidth{Connections}]
@@ -195,7 +195,7 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \end{figure}
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
-
+  \label{sec:exploiting}
   Previous sections have illustrated how use of the NEF can be expected to result in networks which are not amenable to efficient implementation using the standard SpiNNaker paradigm.
   In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
   The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.
@@ -223,13 +223,20 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \label{sec:results}
 
   \subsection{Processor utilisation}
+In order to measure the CPU usage incurred when running the algorithm described in \S\ref{sec:exploiting} on SpiNNaker, we developed a simple tool to profile SpiNNaker executables by manually defining profiling regions within them.
 
-  \textbf{Processor utilisation for communication channel (show variation with dimensionality and neuron count) \color{red} Jamie}
+In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so.
 
   \begin{figure}[!t]
     \includegraphics{figures/comm_channel_cpu_16d_bar}
     \caption{}
     \label{fig:results/comm-channel-cpu-16d}
+  \end{figure}
+  
+  \begin{figure}[!t]
+    \includegraphics{figures/comm_channel_cpu_100n_bar}
+    \caption{}
+    \label{fig:results/comm-channel-cpu-100n}
   \end{figure}
 
   \begin{figure}[!t]

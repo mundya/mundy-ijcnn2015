@@ -158,6 +158,15 @@ plot_stack_bar(results,
     None,
     "Number of neurons",
     "comm_channel_cpu_16d_bar.pdf")
+
+# Plot stuff
+plot_stack_bar(results, 
+    lambda r: int(r[0]),
+    lambda r: int(r[1]) == 100 and int(r[2]) == 0,
+    None,
+    "Number of dimensions",
+    "comm_channel_cpu_100n_bar.pdf")
+
 '''
 plot_stack(results, 
     lambda r: int(r[0]),
