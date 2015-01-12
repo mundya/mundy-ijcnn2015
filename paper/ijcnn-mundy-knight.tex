@@ -212,7 +212,9 @@ Neural models built using the principals of the NEF may be implemented in any pr
   During the \textit{output} stage each element of the output buffer vector is transmitted in the payload of a multicast packet with a key which uniquely identifies the population, decoding vector and element index.
   The communication fabric routes these ``value'' packets to cores which simulate connected populations of neurons.
 
-  \subsection{Injecting and retrieving values}
+  Some ensembles may have multiple outgoing connections with different transformations or functions, as a result there are multiple decoder matrices which need to be applied when decoding the activity of the population.
+  In these cases we combine the matrices such that the decoding vector for any neuron is the concatenation of the required decoders
+  (i.e., $\vec{d}_i = \left[\vec{d}_i^{f(\vec{x})},\,\vec{d}_i^{g(\vec{x})},\,\ldots \right]$).
 
   \section{Results}
   \label{sec:results}
