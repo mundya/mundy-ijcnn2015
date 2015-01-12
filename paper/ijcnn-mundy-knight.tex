@@ -255,17 +255,15 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \subsection{Simulating large-scale models}
   \label{sec:spa-sequence}
 
-In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by Stewart, Choo and Eliasmith \parencite{}. 
+In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by Stewart, Choo and Eliasmith \parencite{Stewart2010}. 
 In our benchmark, we configure the Basal Ganglia portion of this model to select from a list of semantic pointers and then, based on this, use Thalamus to emit the ``next'' semantic pointer in the list. By recurrently connecting the output of the Thalamus to the input of the Basal Ganglia, our network then iterates through the list of semantic pointers as shown in figure~\ref{fig:results/sequence}.
 
-To demonstrate how the performance of our new SpiNNaker simulator scales, we simulated this network at two different scales, with 8 element sequences encoded using 16 dimensional semantic pointers and with 16 element sequences encoding using 32 dimensional semantic pointers. Figure~\ref{fig:results/spa-wall-clock} shows We ran both of these simulations for 10s using both the Nengo reference simulator \parencite{Bekolay2014} and our new SpiNNaker simulator and measuire
-%58 cores
-%113 cores
-\ref{fig:results/spa-wall-clock}
-  
+To demonstrate the run-time savings made possible with our new scheme, we simulated the network for 10s at two different scales using instrumented versions of both the new SpiNNaker simulator and the Nengo reference simulator \parencite{Bekolay2014} running on a standard desktop PC (3Ghz AMD Athlon II X3 445). 
+The results of this process, shown in figure~\ref{fig:results/spa-wall-clock}, illustrate that while  performing the processing required to map the problem to SpiNNaker and transferring data to and from the SpiNNaker board, adds to the simulation time, this is outweighed by the actual simulation time remaining constant, even for relatively small networks.
+ 
   \begin{figure}[!t]
     \includegraphics{figures/sequence}
-    \caption{Comparing the output of the action selection and a list of 4 semantic pointers, labelled $A$, $B$, $C$ and $D$ - showing sequence behaviour.}
+    \caption{Comparing the output of the action selection against a list of 4 semantic pointers, labelled $A$, $B$, $C$ and $D$ - showing sequence behaviour.}
     \label{fig:results/sequence}
   \end{figure}
 

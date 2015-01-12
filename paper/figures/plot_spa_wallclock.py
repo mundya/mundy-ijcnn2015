@@ -52,14 +52,18 @@ def stack(data, offset, legend):
                  width=bar_width, edgecolor="none")
         bottom += times
 
+def get_total(data, experiment_index):
+    time = 0.0
+    for (key, times) in data:
+        time += times[experiment_index]
+    
+    return time
+
 # Draw stacked bars
 stack(reference, 0.0, False)
 stack(spinnaker, bar_width + bar_spacing, True)
 
 axis.set_ylabel("Time / seconds")
-
-box = axis.get_position()
-axis.set_position([box.x0, 0.2, box.width, 0.7])
     
 # Combine bar positions to get tick positions
 ticks = numpy.concatenate((bar_x, bar_x + bar_width + bar_spacing))
@@ -73,7 +77,17 @@ axis.text(bar_x[1] + bar_width, -35.0, "32 dimensions\n16 actions", horizontalal
 axis.legend(loc="upper left")
 
 # Save figure
-#figure.tight_layout(pad=0.0)
+figure.tight_layout(pad=0.0)
+
+# Faff with box after layout
+box = axis.get_position()
+axis.set_position([box.x0, 0.2, box.width, 0.7])
+
 figure.savefig("spa_wall_clock.pdf")
-   
+
+# Calculate speedup
+for t in range(2):
+    print "Experiment %u: Speedup: %f" % (t, get_total(reference, t) / get_total(spinnaker, t))
+
+
 pylab.show()
