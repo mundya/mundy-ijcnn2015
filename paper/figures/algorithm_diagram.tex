@@ -1,0 +1,190 @@
+%% Diagram to illustrate the algorithm
+\documentclass[8pt, tikz]{standalone}
+
+\usepackage{times}
+
+\usetikzlibrary{arrows.meta, bending, decorations.pathreplacing, positioning, shapes}
+
+\tikzstyle{every picture}+=[remember picture]
+\tikzset{
+    neuron/.style = {
+      fill=gray, circle, text width=5pt, text height=5pt, inner sep=0,
+      draw=black!65!white, ultra thick,
+    },
+    box/.style = {
+      ultra thick, color=black!70!white, draw,
+    },
+    ringbuffer/.style = {
+      box, circle, text width=7.5pt, text height=7.5pt, inner sep=0,
+    },
+    matrix line/.style = {very thick, draw=black!50!white},
+    relation/.style = {line width=2.5pt, black!45!white, arrows={Triangle[]-Triangle[]}},
+    core/.style = {line width=4pt, draw=black!10!white, inner sep=10pt},
+    link/.style = {ultra thick, black!80!white, arrows={-Triangle[]}, shorten >= 2pt},
+    brace/.style = {decoration={brace, amplitude=5pt}, decorate, very thick},
+    brace label/.style = {midway, align=center},
+    brace label above/.style = {brace label, above=5pt},
+    brace label below/.style = {brace label, below=5pt},
+}
+
+\newcommand{\drawmatrix}[3]{%
+  \draw [matrix line] (#1) rectangle ++(10pt * #2, -10pt * #3);
+  \foreach \i in {2,...,#2}{%
+    \draw [matrix line] ([xshift=10pt * \i - 10pt] #1) -- ++(0pt, -10pt * #3);
+  }
+  \foreach \j in {2,...,#3}{%
+    \draw [matrix line] ([yshift=-10pt * \j + 10pt] #1) -- ++(10pt * #2, 0pt);
+  }
+}
+
+\newcommand{\valuecore}[4]{%
+  %% Draw a value-based transmission core:
+  %% Arguments:
+  %%    1. Name prefix
+  %%    2. Number of neurons
+  %%    3. Number of encoder dimensions
+  %%    4. Number of decoder dimensions
+  \begin{tikzpicture}
+    %% Draw the filter and the encoder matrix
+    \node [box, minimum width=40pt, minimum height=30pt]
+         (#1_filter) {$H[z]$};
+    \node [box, minimum height=#2*20pt + 5pt, minimum width=#3*10pt + 10pt,
+           right=30pt of #1_filter.east] (#1_encoder) {
+             \begin{tikzpicture}
+               \drawmatrix{0pt, 0pt}{#3}{#2}
+             \end{tikzpicture}
+           };
+    \node [below=5pt of #1_encoder.north] (#1_encoder_label) {$\mathbf{E}$};
+
+    %% Connect them together
+    \draw [link] (#1_filter) -- (#1_encoder);
+
+    %% Draw the neurons
+    \foreach \n in {1,...,#2}{%
+      \node [right=25pt of #1_encoder.south east, neuron, yshift=\n*20pt - 7.5pt]
+            (#1_\n) {};
+      \draw [link] (#1_encoder.east |- #1_\n) -- (#1_\n);
+    }
+
+    % Draw the decoder
+    \node [box, right=55pt of #1_encoder.east, minimum width=#4*10pt + 10pt,
+           minimum height=#2*20pt + 5pt] (#1_decoder) {
+            \begin{tikzpicture}
+               \drawmatrix{0pt, 0pt}{#4}{#2}
+            \end{tikzpicture}
+           };
+    \node [below=5pt of #1_decoder.north] (#1_decoder_label) {$\mathbf{D}$};
+
+    %% Connect the neurons to the decoder
+    \foreach \n in {1,...,#2}{%
+      \draw [link] (#1_\n) -- (#1_\n -| #1_decoder.west);
+    }
+  \end{tikzpicture}
+}
+
+\newcommand{\spikescore}[3]{%
+  %% Draw a value-based transmission core:
+  %% Arguments:
+  %%    1. Name prefix
+  %%    2. Number of neurons
+  %%    3. Number of pre-synaptic neurons
+  \begin{tikzpicture}
+    %% Draw the filter and the encoder matrix
+    \node [box, minimum height=#2*20pt + 5pt, minimum width=#2*10pt + 10pt]
+          (#1_weights) {
+             \begin{tikzpicture}
+               \drawmatrix{0pt, 0pt}{#2}{#3}
+             \end{tikzpicture}
+           };
+    \node [above=1pt of #1_weights.south] (#1_weights_label) {$\omega = \mathbf{D}\mathbf{E}^\top$};
+
+    %% The multiplex which takes spikes and produces packets.
+    \node [trapezium, box, rotate=-90,
+           minimum width=20pt * #2, minimum height=15pt,
+           trapezium stretches, trapezium angle=75,
+           right=117.5pt of #1_weights.east, anchor=south] (#1_mux) {};
+
+    %% Draw the ring buffers and the neurons
+    \foreach \n in {1,...,#2}{%
+      \node [right=30pt of #1_weights.south east, ringbuffer, yshift=\n*20pt - 7.5pt]
+            (#1_ringbuffer_\n) {};
+      \node [right=30pt of #1_ringbuffer_\n, neuron] (#1_\n) {};
+
+      \draw [link] (#1_weights.east |- #1_ringbuffer_\n) -- (#1_ringbuffer_\n);
+      \draw [link] (#1_ringbuffer_\n) -- (#1_\n);
+      \draw [link] (#1_\n) -- (#1_\n -| #1_mux.south);
+
+      \draw [box, very thick, arrows={-Straight Barb[bend, width=3pt, length=3pt]}]
+        (#1_ringbuffer_\n.center)++(-45:10pt)
+        arc [start angle=-45, delta angle=-90, x radius=10pt, y radius=10pt];
+      \draw [box] (#1_ringbuffer_\n.north west) -- (#1_ringbuffer_\n.south east);
+      \draw [box] (#1_ringbuffer_\n.south west) -- (#1_ringbuffer_\n.north east);
+    }
+  \end{tikzpicture}
+}
+
+\begin{document}
+  \begin{tikzpicture}
+    %% Create the two cores and connect them
+    \node [core] (A) {\valuecore{A}{4}{1}{2}};
+    \node [core, right=150pt of A] (B) {\valuecore{B}{5}{2}{2}};
+    \draw [link] (A_decoder) -- (B_filter);
+
+    %% Hide the earlier part of A and the latter part of B
+    \fill [fill opacity=0.75, white]
+      ([xshift=-2.5pt] A_4.west |- A.north west) rectangle (A.south west);
+    \fill [fill opacity=0.75, white]
+      (B_4.east |- B.north east) rectangle (B.south east);
+
+    %% Label the sections of the pipeline
+    \draw [brace]
+      ([xshift=-2.5pt, yshift=2.5pt] A_4.west |- A.north west) --
+      ([xshift=+2.5pt, yshift=2.5pt] A_decoder.north east |- A.north east)
+      node [brace label above, text width=250pt] {
+        Neurons are simulated.  Spikes are immediately \textit{decoded} to form a vector representation of the activity of the neurons.
+      };
+
+    \draw [brace]
+      ([xshift=-2.5pt, yshift=2.5pt] B_filter.north west |- B.north east) --
+      ([xshift=+2.5pt, yshift=2.5pt] B_filter.north east |- B.north east)
+      node [brace label above, text width=225pt] {
+        ``Value'' packets are received, these are reconstructed into a vector which is filtered using the synaptic filter model.
+      };
+
+    \draw [brace]
+      ([xshift=+2.5pt, yshift=2.5pt] B_encoder.south east |- B.south east) --
+      ([xshift=-2.5pt, yshift=2.5pt] B_encoder.south west |- B.south east)
+      node [brace label below, text width=250pt]{
+        The filtered value is \textit{encoded} and forms the input currents.
+      };
+  \end{tikzpicture}
+
+  \begin{tikzpicture}
+    %% Create the two cores and connect them
+    \node [core] (A) {\spikescore{A}{4}{3}};
+    \node [core, right=150pt of A] (B) {\spikescore{B}{5}{4}};
+    \draw [link] (A_mux.north) -- (B_weights);
+
+    %% Hide the earlier part of A and the latter part of B
+    \fill [fill opacity=0.75, white]
+      ([xshift=-2.5pt] A_4.west |- A.north west) rectangle (A.south west);
+    \fill [fill opacity=0.75, white]
+      (B_4.east |- B.north east) rectangle (B.south east);
+
+    %% Label the sections of the pipeline
+    \draw [brace]
+      ([xshift=-2.5pt, yshift=2.5pt] A_4.west |- A.north west) --
+      ([xshift=+2.5pt, yshift=2.5pt] A_mux.north |- A.north east)
+      node [brace label above, text width=150pt] {
+        Neurons are simulated.  Spikes are queued for transmission over the network.
+      };
+
+    \draw [brace]
+      ([xshift=-2.5pt, yshift=2.5pt] B_weights.north west |- B.north east) --
+      ([xshift=+2.5pt, yshift=2.5pt] B_ringbuffer_4.north east |- B.north east)
+      node [brace label above, text width=350pt] {
+        ``Spike'' packets are received.
+        Synaptic weights and delays are looked up and inserted in a ring buffer to form the input current.
+      };
+  \end{tikzpicture}
+\end{document}
