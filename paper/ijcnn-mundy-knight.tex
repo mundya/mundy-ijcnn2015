@@ -107,7 +107,7 @@ These constraints may be met by either allocating fewer neurons to each processi
 
 In practice there are limits to the number of processors and the amount of time that are available (though one aim of the SpiNNaker project is to build a machine consisting of one million cores). Hard time constraints are necessary when SpiNNaker is required to run in biological real-time, as it is in experiments with other neuromorphic hardware. Processor constraints are present for those with access to only small SpiNNaker machines. At some point it is necessary to ensure that efficient use is made of the machine with regard to both time and processor usage.
 
-To a first approximation the first constraint is that the synaptic matrices for a core's neurons must fit within $\frac{128}{16} = \SI{8}{\mebi\byte}$. The interconnection network was designed around an expectation that each core would simulate around \num{1000} neurons firing at roughly \SI{10}{\hertz} and that consequently the second constraint is that when simulating on a millisecond time-step in biological real-time each core is expected to transmit around 10 spikes per time-step. The third constraint is given by \textcite[\S III.C]{Sharp2013} as around \num{5000} spikes per millisecond.
+To a first approximation the first constraint is that the synaptic matrices for a core's neurons must fit within $\frac{128}{16} = \SI{8}{\mebi\byte}$. The interconnection network was designed around an expectation that each core would simulate around \num{1000} neurons firing at roughly \SI{10}{\hertz} and that consequently the second constraint is that when simulating on a millisecond time-step in biological real-time each core is expected to transmit around 10 spikes per time-step. The third constraint is given by \textcite[\S III.C]{Sharp2013} as around \num{5000} synaptic events per millisecond.
 
 It should be noted that time is also a factor \textit{prior} to the start of any simulation. All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, consequently the more data required on the machine the greater the time required to prepare it for simulation. \textcite{Sharp2013} note that this can take a significant period of time and that this is undesirable if a real-time simulator is desired.
 
@@ -155,15 +155,10 @@ Using basic concepts represented as vectors and the two operators, a semantic po
 
 On the basis of these two parameters, we can determine that, functions on these vectors must be evaluated using $3.5\times10^4$ neuron populations, two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries. Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, meaning that the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}. This means that, as each core only has \SI{8}{\mebi\byte} of SDRAM, each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- Several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
 
-%* Each core only left simulating 59 neurons - Design target 1000 **CITE**
-%* 42373 cores to fit Spaun = 2649 chips = 56 48-node SpiNNaker boards
-%
-%Incoming spikes - 5000/ms
-%--------------------------
-%* Each of these cores would have 2*10^6 synapses
-%
-%Outgoing spikes - 10/ms
-%------------------------
+Based on the analysis performed by \textcite{Eliasmith2004}, the mean squared errors caused by representing linear functions with the NEF can be reduced both by increasing the number of neurons used to represent them and allowing these to fire at a higher rate. 
+However, NEF models such as Spaun typically opt to use less neurons, firing at rates of up to \SI{400}{\hertz}. 
+Using typical tuning curves, this means that neurons fire at an average rate of approximately \SI{100}{\hertz}, meaning that a population of just 100 will be likely to exceed the maximum outgoing spike rate constraint. 
+Similarily, because of the synaptic processing constraint, each of these 100 neurons would only be able to process input from 500 other neurons, making it impossible to handle biologically accurate fan-in.
 
   \subsection{Constructing models with the NEF}
 \label{sef:background/constructing}
@@ -229,7 +224,7 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \subsection{Processor utilisation}
 In order to measure the CPU usage incurred when running the algorithm described in \S\ref{sec:exploiting} on SpiNNaker, we developed a simple tool to profile SpiNNaker executables by manually defining profiling regions within them.
 
-In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so.
+In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so. Figures~\ref{fig:results/comm-channel-cpu-16d}~and~\ref{fig:results/comm-channel-cpu-100n} show how 
 
   \begin{figure}[!t]
     \includegraphics{figures/comm_channel_cpu_16d_bar}
@@ -239,7 +234,8 @@ In this section, we use this profiling tool to analyse how the CPU usage of the 
   
   \begin{figure}[!t]
     \includegraphics{figures/comm_channel_cpu_100n_bar}
-    \caption{}
+    \caption{Average percentange of 1ms simulation time step spent in different phases of our simulation algorithm when simulating a communication channel with 100 neurons per-population and varying numbers of dimensions}
+    % **TODO** subfigures with most of this caption shared between them would probably be better
     \label{fig:results/comm-channel-cpu-100n}
   \end{figure}
 
@@ -266,10 +262,10 @@ In this section, we use this profiling tool to analyse how the CPU usage of the 
   \subsection{Simulating large-scale models}
   \label{sec:spa-sequence}
 
-In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by Stewart, Choo and Eliasmith \parencite{Stewart2010}. 
+In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by \textcite{Stewart2010}. 
 In our benchmark, we configure the Basal Ganglia portion of this model to select from a list of semantic pointers and then, based on this, use Thalamus to emit the ``next'' semantic pointer in the list. By recurrently connecting the output of the Thalamus to the input of the Basal Ganglia, our network then iterates through the list of semantic pointers as shown in figure~\ref{fig:results/sequence}.
 
-To demonstrate the run-time savings made possible with our new scheme, we simulated the network for 10s at two different scales using instrumented versions of both the new SpiNNaker simulator and the Nengo reference simulator \parencite{Bekolay2014} running on a standard desktop PC (3Ghz AMD Athlon II X3 445). 
+To demonstrate the run-time savings made possible with our new scheme, we simulated the network for 10s at two different scales using instrumented versions of both the new SpiNNaker simulator and the Nengo reference simulator \parencite{Bekolay2014} running on a standard desktop PC (\SI{3}{\gibi\hertz} AMD Athlon II X3 445). 
 The results of this process, shown in figure~\ref{fig:results/spa-wall-clock}, illustrate that while  performing the processing required to map the problem to SpiNNaker and transferring data to and from the SpiNNaker board, adds to the simulation time, this is outweighed by the actual simulation time remaining constant, even for relatively small networks.
  
   \begin{figure}[!t]
@@ -302,7 +298,7 @@ The results of this process, shown in figure~\ref{fig:results/spa-wall-clock}, i
 
   \S\ref{sec:spa-sequence} illustrated how the SpiNNaker compared to the Python implementation of Nengo when simulating models of a communication channel and a more complicated example highlighting features of the NEF and SPA.
   For some scales of models it may be expected that the overheads of specialised hardware (including SpiNNaker) are sufficiently great that simulation on standard computing hardware and GPUs can be expected to be faster.
-  When this is the case, the Python implementation of Nengo of \textcite[\S6]{Bekolay2014} is shown to compare favourably with several standard neural simulators (Brian \parencite{Goodman2009}, NEURON \parencite{Hines2009} and NEST \parencite{Eppler2009}) on a range of networks, and an OpenCL implementation of Nengo is shown to perform even better but is only demonstrated on feed-forward networks.
+  When this is the case, the Python implementation of Nengo of \textcite[\S6]{Bekolay2014} is shown to compare favourably with several standard neural simulators (Brian \parencite{Goodman2009}, NEURON \parencite{carnevale2006neuron} and NEST \parencite{Gewaltig2007}) on a range of networks, and an OpenCL implementation of Nengo is shown to perform even better but is only demonstrated on feed-forward networks.
   However, when simulating models on the scale of Spaun we expect the simulation scheme detailed in this paper to provide substantial speed improvements over standard computing hardware even when the overheads are taken into account; moreover as SpiNNaker is a real-time simulator we expect it to perform well in conjunction with neuromorphic sensors or actuators.
 
   \subsection{General applicability of the algorithm}
