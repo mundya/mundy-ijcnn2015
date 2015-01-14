@@ -156,6 +156,13 @@ Using basic concepts represented as vectors and the two operators, a semantic po
 
 On the basis of these two parameters, we can determine that, functions on these vectors must be evaluated using $3.5\times10^4$ neuron populations, two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries. Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, meaning that the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}. This means that, as each core only has \SI{8}{\mebi\byte} of SDRAM, each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- Several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
 
+  \begin{figure}[!t]
+    \centering
+    \includegraphics[scale=0.8]{figures/network-1}
+    \caption{Spike rates for the pre-synaptic population of a communication channel.  The vertical line indicates the point at which \num{5000} synaptic events per core has been passed. Each population had 70 neurons per dimension.}
+    \label{fig:results/network-utilisation}
+  \end{figure}
+
 %* Each core only left simulating 59 neurons - Design target 1000 **CITE**
 %* 42373 cores to fit Spaun = 2649 chips = 56 48-node SpiNNaker boards
 %
@@ -265,25 +272,6 @@ Neural models built using the principals of the NEF may be implemented in any pr
     \caption{}
     \label{fig:results/comm-channel-cpu-contour}
   \end{figure}
-  
-  \subsection{Network utilisation}
-
-  As an indicator of the network utilisation of both the spike-based and value-based algorithms we again consider a communication channel.
-  In this experiment we constructed several communication channels and determined the number of packets that would need to be transmitted to represent all the spikes of the pre-synaptic population and every element of the vector that the population represents.
-  \figurename~\ref{fig:results/network-utilisation} shows how the number of packets required varies with the number of neurons and dimensions for every simulation step in a \SI{10}{\second} simulation using \SI{1}{\milli\second} time steps.
-  The neural populations were constructed using the default Nengo values such that each neuron saturated at a firing rate uniformly distributed between \SI{200}{\hertz} and \SI{400}{\hertz}.
-  Random values taken from the surface of the hypersphere represented by the pre-synaptic population were used to form the input for the communication channel.
-
-  \begin{figure}[!t]
-    \includegraphics{figures/network-1}
-    \caption{Network utilisation (in packet count per \SI{1}{\milli\second} time-step) of a communication channel for varying numbers of neurons and dimensions.}
-    \label{fig:results/network-utilisation}
-  \end{figure}
-
-  % Something about why 50 neurons per dimension
-  % Comparison between increasing number of neurons and fixed number of neurons
-  % Indication that 16 is a reasonable number of dimensions for large Spaun simulations
-  % Comment on results
 
   \subsection{Memory utilisation}
 
