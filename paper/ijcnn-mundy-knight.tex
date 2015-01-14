@@ -185,25 +185,15 @@ Neural models built using the principals of the NEF may be implemented in any pr
       nengo.Connection(ens_a, ens_b)
   \end{lstlisting}
 
-  \begin{figure*}
+  \begin{figure}
     \centering
-    \begin{minipage}[c]{.25\textwidth}
-    \subfloat[Communication channel]{
-        \label{fig:background/comms-channel}
-        \includestandalone[width=\textwidth]{figures/comms_channel_map}
-      }
-    \end{minipage}
-    \hfil
-    \begin{minipage}[c]{.68\textwidth}
-      \subfloat[Spike-based transmission]{%
-        \label{fig:algorithm/spikes}
-        \includegraphics[width=\textwidth, page=2]{figures/algorithm_diagram}}\\
-      \subfloat[Value-based transmission]{%
-        \label{fig:algorithm/values}
-        \includegraphics[width=\textwidth, page=1]{figures/algorithm_diagram}}
-    \end{minipage}
-    \caption{A communication channel and simplified-SpiNNaker instantiation (a), and a comparison of the (b) spike based algorithm and the (c) value based algorithm that we present in this paper.}
-  \end{figure*}
+    \includestandalone[scale=0.75]{figures/comms_channel_map}
+    \caption{A NEF communication channel consisting of two populations of neurons and a connection.
+    The diagram indicates how the abstract communication channel might be instantiated on a simplified representation of the SpiNNaker architecture:
+    Population $A$ is split between processing two cores, consequently two streams of multicast packets allow simulation of the communication channel.
+    }
+    \label{fig:background/comms-channel}
+  \end{figure}
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
   \label{sec:exploiting}
@@ -223,6 +213,17 @@ Neural models built using the principals of the NEF may be implemented in any pr
   Rather, the spikes are multiplied by the decoder and the resulting vector value is transmitted.
   Importantly, since the original weight matrices are perfectly factorable, the result is identical to the original SpiNNaker approach in terms of the neural behaviour, but with significantly reduced memory requirements, and, as we shall show, improved processor and network utilisation.
   \figurename~\ref{fig:algorithm/spikes} illustrates the old scheme with the full weight matrix stored in the memory of the post-synaptic core and \figurename~\ref{fig:algorithm/values} illustrates the proposed scheme with the factored matrix split across the pre- and post-synaptic cores and with ``value''-packets being transmitted between the processors.
+
+  \begin{figure*}
+    \subfloat[Spike-based transmission]{%
+      \label{fig:algorithm/spikes}
+      \includegraphics[width=\textwidth, page=2]{figures/algorithm_diagram}}\\
+    \subfloat[Value-based transmission]{%
+      \label{fig:algorithm/values}
+      \includegraphics[width=\textwidth, page=1]{figures/algorithm_diagram}}
+      \caption{A comparison of the (a) spike-based and the (b) proposed value-based algorithms.}
+  \end{figure*}
+
 
   We split the execution time of a processing core into three steps: \textit{input filtering}, \textit{neuron update} and \textit{output}.
   In the old simulation scheme the ``inputs'' to a processing core were in the form of ``spike'' packets which were used to drive a pipeline which retrieved synaptic weights from SDRAM; in our new scheme the inputs take the form of a set of packets whose payloads can be combined to form a vector.
