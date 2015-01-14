@@ -1,5 +1,10 @@
 \documentclass[conference]{IEEEtran}
 
+\IEEEoverridecommandlockouts
+\newcommand{\funding}{%
+  This work is partially supported by the European Union under grant nos. FP7-604102 (HBP), FP7-287701 (BrainScales-Extension), and ERC-320689 (BIMPC), and by grant EP/G015740/1 (BIMPA).
+}
+
 %% Document properties (~ is a non-breaking space)
 \title{Using Factored~Weight~Matrices for an efficient SpiNNaker implementation of the Neural~Engineering~Framework}
 \author{%
@@ -23,10 +28,7 @@
                     Oxford Road, Manchester,\\
                     M13 9PL, UK\\
                     Email: steve.furber@manchester.ac.uk}
-}
-
-\newcommand{\funding}{%
-  This work is partially supported by the European Union under grant nos. FP7-604102 (HBP), FP7-287701 (BrainScales-Extension), and ERC-320689 (BIMPC), and by grant EP/G015740/1 (BIMPA).
+  \thanks{\funding}
 }
 
 %% Utilities
@@ -303,8 +305,6 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \section*{Acknowledgements}
 
 The authors would like to extend their thanks to the organisers of the Telluride Neuromorphic Cognition Engineering Workshop.
-
-  \funding
 
   \printbibliography
 
