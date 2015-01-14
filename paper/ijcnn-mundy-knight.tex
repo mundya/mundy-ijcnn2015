@@ -161,6 +161,23 @@ Based on the analysis performed by \textcite{Eliasmith2004}, the mean squared er
 However, NEF models such as Spaun typically opt to use less neurons, firing at rates of up to \SI{400}{\hertz}. 
 Using typical tuning curves, this means that neurons fire at an average rate of approximately \SI{100}{\hertz}, meaning that a population of just 100 will be likely to exceed the maximum outgoing spike rate constraint. 
 Similarily, because of the synaptic processing constraint, each of these 100 neurons would only be able to process input from 500 other neurons, making it impossible to handle biologically accurate fan-in.
+=======
+  \begin{figure}[!t]
+    \centering
+    \includegraphics[scale=0.8]{figures/network-1}
+    \caption{Spike rates for the pre-synaptic population of a communication channel.  The vertical line indicates the point at which \num{5000} synaptic events per core has been passed. Each population had 70 neurons per dimension.}
+    \label{fig:results/network-utilisation}
+  \end{figure}
+
+%* Each core only left simulating 59 neurons - Design target 1000 **CITE**
+%* 42373 cores to fit Spaun = 2649 chips = 56 48-node SpiNNaker boards
+%
+%Incoming spikes - 5000/ms
+%--------------------------
+%* Each of these cores would have 2*10^6 synapses
+%
+%Outgoing spikes - 10/ms
+%------------------------
 
   \subsection{Constructing models with the NEF}
 \label{sef:background/constructing}
@@ -289,16 +306,6 @@ The majority of the
     \caption{Average percentange of 1ms simulation time step spent in different phases of our simulation algorithm when simulating communication channels of varying dimensionality using different numbers of neurons.}
     \label{fig:results/comm-channel-cpu}
   \end{figure*}
-
-  \subsection{Network utilisation}
-
-  \textbf{Network utilisation for communication channel, varying neuron count and dimensionality \color{red} Andrew}
-
-  \begin{figure}[!t]
-    \includegraphics{figures/network-1}
-    \caption{}
-    \label{fig:results/network-utilisation}
-  \end{figure}
 
   \subsection{Memory utilisation}
 
