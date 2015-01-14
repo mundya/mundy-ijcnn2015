@@ -25,6 +25,10 @@
     brace label/.style = {midway, align=center},
     brace label above/.style = {brace label, above=5pt},
     brace label below/.style = {brace label, below=5pt},
+    value packet split/.style = {very thick, black!50!white},
+    packet/.style = {above=2.5pt, text height=5pt, inner sep=0, value packet split, draw},
+    spike packet/.style = {packet, text width=5pt},
+    value packet/.style = {packet, text width=10pt},
 }
 
 \newcommand{\drawmatrix}[3]{%
@@ -127,8 +131,13 @@
   \begin{tikzpicture}
     %% Create the two cores and connect them
     \node [core] (A) {\valuecore{A}{4}{1}{2}};
-    \node [core, right=150pt of A] (B) {\valuecore{B}{5}{2}{2}};
-    \draw [link] (A_decoder) -- (B_filter);
+    \node [core, right=100pt of A] (B) {\valuecore{B}{5}{2}{2}};
+    \draw [link] (A_decoder) -- (B_filter)
+      node [pos=.3, value packet] (val1) {}
+      node [pos=.6, value packet] (val2) {};
+    \foreach \n in {1,2}{%
+      \draw [value packet split] (val\n.north) -- (val\n.south);
+    }
 
     %% Hide the earlier part of A and the latter part of B
     \fill [fill opacity=0.75, white]
@@ -137,33 +146,43 @@
       (B_4.east |- B.north east) rectangle (B.south east);
 
     %% Label the sections of the pipeline
-    \draw [brace]
+      \draw [brace, decoration={aspect=0.3}]
       ([xshift=-2.5pt, yshift=2.5pt] A_4.west |- A.north west) --
       ([xshift=+2.5pt, yshift=2.5pt] A_decoder.north east |- A.north east)
-      node [brace label above, text width=250pt] {
-        Neurons are simulated.  Spikes are immediately \textit{decoded} to form a vector representation of the activity of the neurons.
+      node [brace label above, pos=0.3, text width=200pt] {
+        Neurons are simulated.  Any spikes are immediately \textit{decoded} to form a vector representation of the activity of the neurons.
       };
 
-    \draw [brace]
+    \draw [brace, decoration={aspect=0.6}]
       ([xshift=-2.5pt, yshift=2.5pt] B_filter.north west |- B.north east) --
       ([xshift=+2.5pt, yshift=2.5pt] B_filter.north east |- B.north east)
-      node [brace label above, text width=225pt] {
+      node [brace label above, pos=.6, text width=225pt] {
         ``Value'' packets are received, these are reconstructed into a vector which is filtered using the synaptic filter model.
       };
 
-    \draw [brace]
-      ([xshift=+2.5pt, yshift=2.5pt] B_encoder.south east |- B.south east) --
-      ([xshift=-2.5pt, yshift=2.5pt] B_encoder.south west |- B.south east)
-      node [brace label below, text width=250pt]{
-        The filtered value is \textit{encoded} and forms the input currents.
+    \draw [brace, decoration={aspect=0.6}]
+      ([xshift=-2.5pt, yshift=-2.5pt] B_1.west |- B.south east) --
+      ([xshift=-2.5pt, yshift=-2.5pt] B_encoder.south west |- B.south east)
+      node [brace label below, pos=0.6, text width=250pt]{
+        The filtered value is \textit{encoded} to form input currents.
       };
+
+    \draw [brace, decoration={aspect=0.4}]
+      ([xshift=+2.5pt, yshift=-5pt] val2.south east) --
+      ([xshift=-2.5pt, yshift=-5pt] val1.south west)
+      node [brace label below, pos=0.4, text width=90pt] {Packets each contain one element of the decoded vector.};
+
   \end{tikzpicture}
 
   \begin{tikzpicture}
-    %% Create the two cores and connect them
+    %% Create the two cores and connect them, mark spike packets should be placed
     \node [core] (A) {\spikescore{A}{4}{3}};
-    \node [core, right=150pt of A] (B) {\spikescore{B}{5}{4}};
-    \draw [link] (A_mux.north) -- (B_weights);
+    \node [core, right=100pt of A] (B) {\spikescore{B}{5}{4}};
+    \draw [link] (A_mux.north) -- (B_weights)
+      node [pos=0.25, spike packet] (sp1) {}
+      node [pos=0.40, spike packet] (sp2) {}
+      node [pos=0.60, spike packet] (sp3) {}
+      node [pos=0.85, spike packet] (sp4) {};
 
     %% Hide the earlier part of A and the latter part of B
     \fill [fill opacity=0.75, white]
@@ -182,9 +201,14 @@
     \draw [brace]
       ([xshift=-2.5pt, yshift=2.5pt] B_weights.north west |- B.north east) --
       ([xshift=+2.5pt, yshift=2.5pt] B_ringbuffer_4.north east |- B.north east)
-      node [brace label above, text width=350pt] {
+      node [brace label above, text width=300pt] {
         ``Spike'' packets are received.
-        Synaptic weights and delays are looked up and inserted in a ring buffer to form the input current.
+        Synaptic weights and delays are looked up and inserted in a ring buffer to form input currents.
       };
+
+    \draw [brace, decoration={aspect=0.6}]
+      ([xshift=+2.5pt, yshift=-5pt] sp4.south east) --
+      ([xshift=-2.5pt, yshift=-5pt] sp1.south west)
+      node [brace label below, pos=0.6, text width=90pt] {Packets indicate which neurons have spiked.};
   \end{tikzpicture}
 \end{document}

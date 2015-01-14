@@ -1,5 +1,10 @@
 \documentclass[conference]{IEEEtran}
 
+\IEEEoverridecommandlockouts
+\newcommand{\funding}{%
+  This work is partially supported by the European Union under grant nos. FP7-604102 (HBP), FP7-287701 (BrainScales-Extension), and ERC-320689 (BIMPC), and by grant EP/G015740/1 (BIMPA).
+}
+
 %% Document properties (~ is a non-breaking space)
 \title{Using Factored~Weight~Matrices for an efficient SpiNNaker implementation of the Neural~Engineering~Framework}
 \author{%
@@ -23,10 +28,7 @@
                     Oxford Road, Manchester,\\
                     M13 9PL, UK\\
                     Email: steve.furber@manchester.ac.uk}
-}
-
-\newcommand{\funding}{%
-  This work is partially supported by the European Union under grant nos. FP7-604102 (HBP), FP7-287701 (BrainScales-Extension), and ERC-320689 (BIMPC), and by grant EP/G015740/1 (BIMPA).
+  \thanks{\funding}
 }
 
 %% Utilities
@@ -139,7 +141,7 @@ Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum 
 For a connection between a pair of populations, a, typically dense, synaptic weight matrix can be calculated by taking the matrix product of the pre-synaptic populations decoders and the post-synaptic populations encoders \parencite{Stewart2014}:
 
 \begin{equation}
-  \omega_{ij} = \alpha_j \vec{d_i}\vec{e_j}
+  \omega_{ij} = \alpha_j \vec{d_i}\vec{e_j}  \label{eq:weights}
 \end{equation}
 
 With $i$ indexing neurons in the pre-synaptic population and $j$ those in the post-synaptic population.
@@ -183,22 +185,44 @@ Neural models built using the principals of the NEF may be implemented in any pr
       nengo.Connection(ens_a, ens_b)
   \end{lstlisting}
 
-  \begin{figure}
+  \begin{figure*}
     \centering
-    \includestandalone{figures/comms_channel_map}
-    \caption{A NEF communication channel consisting of two populations of neurons and a connection.
-             The diagram indicates how the abstract communication channel might be instantiated on a simplified representation of the SpiNNaker architecture:
-             Population $A$ is split between processing two cores, consequently two streams of multicast packets allow simulation of the communication channel.
-    }
-    \label{fig:background/comms-channel}
-  \end{figure}
+    \begin{minipage}[c]{.25\textwidth}
+    \subfloat[Communication channel]{
+        \label{fig:background/comms-channel}
+        \includestandalone[width=\textwidth]{figures/comms_channel_map}
+      }
+    \end{minipage}
+    \hfil
+    \begin{minipage}[c]{.68\textwidth}
+      \subfloat[Spike-based transmission]{%
+        \label{fig:algorithm/spikes}
+        \includegraphics[width=\textwidth, page=2]{figures/algorithm_diagram}}\\
+      \subfloat[Value-based transmission]{%
+        \label{fig:algorithm/values}
+        \includegraphics[width=\textwidth, page=1]{figures/algorithm_diagram}}
+    \end{minipage}
+    \caption{A communication channel and simplified-SpiNNaker instantiation (a), and a comparison of the (b) spike based algorithm and the (c) value based algorithm that we present in this paper.}
+  \end{figure*}
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
   \label{sec:exploiting}
   Previous sections have illustrated how use of the NEF can be expected to result in networks which are not amenable to efficient implementation using the standard SpiNNaker paradigm.
   In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
-  The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.
-  In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores.
+  % The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.
+  % In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores.
+  The details of the NEF described above suggest this alternate, more efficient, implementation for SpiNNaker.
+  We note that the synaptic weight matrices are computed via (\ref{eq:weights}).
+  This means that all the synaptic weight matrices are exactly \textit{factorable}.
+  Moreover every set of connection weights coming into an ensemble will have the same $\alpha_j \vec{e}_j$ factor applied to it.
+  We can thus \textit{split} the synaptic connection weight matrices into two parts: the ``encoder'' $\alpha_j \vec{e}_j$ and the ``decoder'' $\vec{d}_i$.
+  These matrices are of size $N \times D$ and $D \times N$, where $D$ is the ``dimensionality'' of the representation and is generally much smaller than $N$, the number of neurons.
+  We can store the encoder in the core that is simulating the post-synaptic population, and we can store the decoder with the pre-synaptic population.
+  This saves significant memory, since the two factors are much smaller than the original weight matrix, and we only need to store one encoder no matter how many sets of input connections there are.
+  However, since the connection weight matrix is split in this way, we no longer send messages for each spike.
+  Rather, the spikes are multiplied by the decoder and the resulting vector value is transmitted.
+  Importantly, since the original weight matrices are perfectly factorable, the result is identical to the original SpiNNaker approach in terms of the neural behaviour, but with significantly reduced memory requirements, and, as we shall show, improved processor and network utilisation.
+  \figurename~\ref{fig:algorithm/spikes} illustrates the old scheme with the full weight matrix stored in the memory of the post-synaptic core and \figurename~\ref{fig:algorithm/values} illustrates the proposed scheme with the factored matrix split across the pre- and post-synaptic cores and with ``value''-packets being transmitted between the processors.
 
   We split the execution time of a processing core into three steps: \textit{input filtering}, \textit{neuron update} and \textit{output}.
   In the old simulation scheme the ``inputs'' to a processing core were in the form of ``spike'' packets which were used to drive a pipeline which retrieved synaptic weights from SDRAM; in our new scheme the inputs take the form of a set of packets whose payloads can be combined to form a vector.
@@ -322,8 +346,6 @@ The results of this process, shown in figure~\ref{fig:results/spa-wall-clock}, i
   \section*{Acknowledgements}
 
 The authors would like to extend their thanks to the organisers of the Telluride Neuromorphic Cognition Engineering Workshop.
-
-  \funding
 
   \printbibliography
 
