@@ -101,7 +101,6 @@ There are three primary constraints to the number of neurons that may be simulat
 
   \begin{enumerate}
     \item The amount of memory required to store the synaptic weight matrices must fit within the space available to the core.
-    \item The number of packets likely to be transmitted by the core should not lead to saturation of the interconnection network.
     \item As \textcite{Sharp2013} discuss, the majority of processing time is spent in the synaptic processing pipeline so there must be sufficient time for the core to process all incoming `spike' packets; and retrieve and process the synaptic rows during one simulation time-step.
   \end{enumerate}
 
@@ -109,7 +108,7 @@ These constraints may be met by either allocating fewer neurons to each processi
 
 In practice there are limits to the number of processors and the amount of time that are available (though one aim of the SpiNNaker project is to build a machine consisting of one million cores). Hard time constraints are necessary when SpiNNaker is required to run in biological real-time, as it is in experiments with other neuromorphic hardware. Processor constraints are present for those with access to only small SpiNNaker machines. At some point it is necessary to ensure that efficient use is made of the machine with regard to both time and processor usage.
 
-To a first approximation the first constraint is that the synaptic matrices for a core's neurons must fit within $\frac{128}{16} = \SI{8}{\mebi\byte}$. The interconnection network was designed around an expectation that each core would simulate around \num{1000} neurons firing at roughly \SI{10}{\hertz} and that consequently the second constraint is that when simulating on a millisecond time-step in biological real-time each core is expected to transmit around 10 spikes per time-step. The third constraint is given by \textcite[\S III.C]{Sharp2013} as around \num{5000} synaptic events per millisecond.
+To a first approximation the first constraint is that the synaptic matrices for a core's neurons must fit within $\frac{128}{16} = \SI{8}{\mebi\byte}$ and \textcite[\S III.C]{Sharp2013} measure the second constraint as being around \num{5000} synaptic events per millisecond.
 
 It should be noted that time is also a factor \textit{prior} to the start of any simulation. All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, consequently the more data required on the machine the greater the time required to prepare it for simulation. \textcite{Sharp2013} note that this can take a significant period of time and that this is undesirable if a real-time simulator is desired.
 
@@ -159,8 +158,9 @@ On the basis of these two parameters, we can determine that, functions on these 
 
 Based on the analysis performed by \textcite{Eliasmith2004}, the mean squared errors caused by representing linear functions with the NEF can be reduced both by increasing the number of neurons used to represent them and allowing these to fire at a higher rate. 
 However, NEF models such as Spaun typically opt to use less neurons, firing at rates of up to \SI{400}{\hertz}. 
-Using typical tuning curves, this means that neurons fire at an average rate of approximately \SI{100}{\hertz}, meaning that a population of just 100 will be likely to exceed the maximum outgoing spike rate constraint. 
-Similarily, because of the synaptic processing constraint, each of these 100 neurons would only be able to process input from 500 other neurons, making it impossible to handle biologically accurate fan-in.
+This means that when using typical tuning curves, neurons fire at an average rate of approximately \SI{100}{\hertz}. 
+On this basis, as figure \ref{fig:results/network-utilisation} shows, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes  per-timestep.
+Due to the dense connectivity matrices used by NEF, each of these spikes will then result in 280 synaptic events, exceeding the synaptic processing constraint of 5000 synaptic events per time-step.
 
   \begin{figure}[!t]
     \centering
@@ -168,16 +168,6 @@ Similarily, because of the synaptic processing constraint, each of these 100 neu
     \caption{Spike rates for the pre-synaptic population of a communication channel.  The vertical line indicates the point at which \num{5000} synaptic events per core has been passed. Each population had 70 neurons per dimension.}
     \label{fig:results/network-utilisation}
   \end{figure}
-
-%* Each core only left simulating 59 neurons - Design target 1000 **CITE**
-%* 42373 cores to fit Spaun = 2649 chips = 56 48-node SpiNNaker boards
-%
-%Incoming spikes - 5000/ms
-%--------------------------
-%* Each of these cores would have 2*10^6 synapses
-%
-%Outgoing spikes - 10/ms
-%------------------------
 
   \subsection{Constructing models with the NEF}
 \label{sef:background/constructing}
@@ -268,7 +258,7 @@ In order to measure the CPU usage incurred when running the algorithm described 
 
 In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so. 
 Figure~\ref{fig:results/comm-channel-cpu} show how the CPU time spent in the different phases of the algorithm outlined in \S\ref{sec:exploiting} increases with the number of dimensions and neurons. 
-As a packet is sent and received every timestep for each dimension, the CPU time spent in both the \textit{input filtering} and \textit{output} phases is only dependant on the dimensionality $D$. On this basis, we fitted the following simple models of CPU time spent in these phases to the profiling data by performing a minimisation of the mean-squared error:
+As a packet is sent and received every time-step for each dimension, the CPU time spent in both the \textit{input filtering} and \textit{output} phases is only dependant on the dimensionality $D$. On this basis, we fitted the following simple models of CPU time spent in these phases to the profiling data by performing a minimisation of the mean-squared error:
 %
 \begin{eqnarray}
   t_{input} & = & 245 + 43 \cdot D \label{eq:profiling_input}\\
@@ -284,15 +274,22 @@ As each neuron needs to apply its encoder vector to the filtered input and, if i
 By adding these equations together, we can model the total CPU usage as follows:
 %
 \begin{equation}
-  t = 533 + 745 \cdot D + 69 \cdot N + 13 \cdot N \cdot D
+  t = 533 + 745 \cdot D + 69 \cdot N + 13 \cdot N \cdot D\label{eq:profiling_total}
 \end{equation}
 %
 The 69 cycle cost of updating each neuron is a significant improvement over the 128 cycles quoted by \textcite{Sharp2013}. 
 The reason for this is likely to be due to the the Nengo neuron models use of normalised membrane voltages and having many parameters common to an entire population of neurons. 
 This means that fewer memory instructions are required to transfer each neurons state into the register file when compared to the general purpose SpiNNaker simulator. 
 
-The majority of the 
-
+In order to not overload the network interconnect, the simulator waits for \SI{1}{\micro\second} between sending packets in the \textit{output} phase, resulting in the high cost per-dimension shown in equation~\ref{eq:profiling_output}. 
+The remaining terms of equation~\ref{eq:profiling_total} are then approximately synonymous with the synaptic processing stage of the general purpose SpiNNaker simulator analysed in \S\ref{sef:background/assessing}.
+Here the CPU benefits of the new simulation scheme become clear as, when we fit a similar model to the spike-based results shown in figure~\ref{fig:results/network-utilisation} we obtain the following equation:
+%
+\begin{equation}
+  t = 3 \cdot N^{2}
+\end{equation}
+%
+Which, as $N \gg D$, grows much more rapidly than equation~\ref{eq:profiling_total}.
 
   \begin{figure*}[!t]
     \centering
