@@ -268,13 +268,22 @@ Neural models built using the principals of the NEF may be implemented in any pr
   
   \subsection{Network utilisation}
 
-  \textbf{Network utilisation for communication channel, varying neuron count and dimensionality \color{red} Andrew}
+  As an indicator of the network utilisation of both the spike-based and value-based algorithms we again consider a communication channel.
+  In this experiment we constructed several communication channels and determined the number of packets that would need to be transmitted to represent all the spikes of the pre-synaptic population and every element of the vector that the population represents.
+  \figurename~\ref{fig:results/network-utilisation} shows how the number of packets required varies with the number of neurons and dimensions for every simulation step in a \SI{10}{\second} simulation using \SI{1}{\milli\second} time steps.
+  The neural populations were constructed using the default Nengo values such that each neuron saturated at a firing rate uniformly distributed between \SI{200}{\hertz} and \SI{400}{\hertz}.
+  Random values taken from the surface of the hypersphere represented by the pre-synaptic population were used to form the input for the communication channel.
 
   \begin{figure}[!t]
     \includegraphics{figures/network-1}
-    \caption{}
+    \caption{Network utilisation (in packet count per \SI{1}{\milli\second} time-step) of a communication channel for varying numbers of neurons and dimensions.}
     \label{fig:results/network-utilisation}
   \end{figure}
+
+  % Something about why 50 neurons per dimension
+  % Comparison between increasing number of neurons and fixed number of neurons
+  % Indication that 16 is a reasonable number of dimensions for large Spaun simulations
+  % Comment on results
 
   \subsection{Memory utilisation}
 
