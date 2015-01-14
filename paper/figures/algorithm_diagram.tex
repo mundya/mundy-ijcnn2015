@@ -139,24 +139,28 @@
       \draw [value packet split] (val\n.north) -- (val\n.south);
     }
 
+    %% Draw extra input and output connections
+    \draw [link] ([xshift=-50pt] A_filter.west) -- (A_filter.west);
+    \draw [link] (B_decoder.east) -- ++(50pt, 0);
+
     %% Hide the earlier part of A and the latter part of B
     \fill [fill opacity=0.75, white]
-      ([xshift=-2.5pt] A_4.west |- A.north west) rectangle (A.south west);
+    ([xshift=-2.5pt] A_4.west |- A.north west) rectangle ([xshift=-50pt] A.south west);
     \fill [fill opacity=0.75, white]
-      (B_4.east |- B.north east) rectangle (B.south east);
+      (B_4.east |- B.north east) rectangle ([xshift=50pt] B.south east);
 
     %% Label the sections of the pipeline
-      \draw [brace, decoration={aspect=0.3}]
+      \draw [brace, decoration={aspect=0.6}]
       ([xshift=-2.5pt, yshift=2.5pt] A_4.west |- A.north west) --
       ([xshift=+2.5pt, yshift=2.5pt] A_decoder.north east |- A.north east)
-      node [brace label above, pos=0.3, text width=200pt] {
+      node [brace label above, pos=0.9, text width=275pt, align=right, anchor=south east, xshift=25pt] {
         Neurons are simulated.  Any spikes are immediately \textit{decoded} to form a vector representation of the activity of the neurons.
       };
 
-    \draw [brace, decoration={aspect=0.6}]
+    \draw [brace, decoration={aspect=0.3}]
       ([xshift=-2.5pt, yshift=2.5pt] B_filter.north west |- B.north east) --
       ([xshift=+2.5pt, yshift=2.5pt] B_filter.north east |- B.north east)
-      node [brace label above, pos=.6, text width=225pt] {
+      node [brace label above, pos=0, text width=250pt, align=left, anchor=south west, xshift=-25pt] {
         ``Value'' packets are received, these are reconstructed into a vector which is filtered using the synaptic filter model.
       };
 
@@ -184,24 +188,28 @@
       node [pos=0.60, spike packet] (sp3) {}
       node [pos=0.85, spike packet] (sp4) {};
 
+    %% Draw extra input and output connections
+    \draw [link] ([xshift=-50pt] A_weights.west) -- (A_weights.west);
+    \draw [link] (B_mux.north) -- ++(50pt, 0);
+
     %% Hide the earlier part of A and the latter part of B
     \fill [fill opacity=0.75, white]
-      ([xshift=-2.5pt] A_4.west |- A.north west) rectangle (A.south west);
+    ([xshift=-2.5pt] A_4.west |- A.north west) rectangle ([xshift=-50pt] A.south west);
     \fill [fill opacity=0.75, white]
-      (B_4.east |- B.north east) rectangle (B.south east);
+      (B_4.east |- B.north east) rectangle ([xshift=50pt] B.south east);
 
     %% Label the sections of the pipeline
-    \draw [brace]
+    \draw [brace, decoration={aspect=.6}]
       ([xshift=-2.5pt, yshift=2.5pt] A_4.west |- A.north west) --
       ([xshift=+2.5pt, yshift=2.5pt] A_mux.north |- A.north east)
-      node [brace label above, text width=150pt] {
-        Neurons are simulated.  Spikes are queued for transmission over the network.
+      node [brace label above, pos=0.9, text width=275pt, align=right, anchor=south east, xshift=25pt] {
+        Neurons are simulated.  Spikes are~queued for transmission over the network.
       };
 
-    \draw [brace]
+    \draw [brace, decoration={aspect=0.2}]
       ([xshift=-2.5pt, yshift=2.5pt] B_weights.north west |- B.north east) --
       ([xshift=+2.5pt, yshift=2.5pt] B_ringbuffer_4.north east |- B.north east)
-      node [brace label above, text width=300pt] {
+      node [brace label above, text width=275pt, pos=0, align=left, anchor=south west, xshift=-25pt] {
         ``Spike'' packets are received.
         Synaptic weights and delays are looked up and inserted in a ring buffer to form input currents.
       };
