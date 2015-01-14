@@ -248,27 +248,47 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \subsection{Processor utilisation}
 In order to measure the CPU usage incurred when running the algorithm described in \S\ref{sec:exploiting} on SpiNNaker, we developed a simple tool to profile SpiNNaker executables by manually defining profiling regions within them.
 
-In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so. Figures~\ref{fig:results/comm-channel-cpu-16d}~and~\ref{fig:results/comm-channel-cpu-100n} show how 
+In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so. 
+Figure~\ref{fig:results/comm-channel-cpu} show how the CPU time spent in the different phases of the algorithm outlined in \S\ref{sec:exploiting} increases with the number of dimensions and neurons. 
+As a packet is sent and received every timestep for each dimension, the CPU time spent in both the \textit{input filtering} and \textit{output} phases is only dependant on the dimensionality $D$. On this basis, we fitted the following simple models of CPU time spent in these phases to the profiling data by performing a minimisation of the mean-squared error:
+%
+\begin{eqnarray}
+  t_{input} & = & 245 + 43 \cdot D \label{eq:profiling_input}\\
+  t_{output} & = & 100 + 702 \cdot D \label{eq:profiling_output}
+\end{eqnarray}
+%
+As each neuron needs to apply its encoder vector to the filtered input and, if it spikes, add its decoder vector to the output buffer, the time spent in the \textit{neuron update} phase is dependant both on the dimensionality as well as the number of neurons $N$. To model this, we again fitted a simple, 1st order, 2-D model to the profiling data by performing a minimisation of the mean-squared error:
+%
+\begin{equation}
+  t_{neuron} = 188 + 69 \cdot N + 13 \cdot N \cdot D\label{eq:profiling_neuron}
+\end{equation}
+%
+By adding these equations together, we can model the total CPU usage as follows:
+%
+\begin{equation}
+  t = 533 + 745 \cdot D + 69 \cdot N + 13 \cdot N \cdot D
+\end{equation}
+%
+The 69 cycle cost of updating each neuron is a significant improvement over the 128 cycles quoted by \textcite{Sharp2013}. 
+The reason for this is likely to be due to the the Nengo neuron models use of normalised membrane voltages and having many parameters common to an entire population of neurons. 
+This means that fewer memory instructions are required to transfer each neurons state into the register file when compared to the general purpose SpiNNaker simulator. 
 
-  \begin{figure}[!t]
-    \includegraphics{figures/comm_channel_cpu_16d_bar}
-    \caption{}
-    \label{fig:results/comm-channel-cpu-16d}
-  \end{figure}
-  
-  \begin{figure}[!t]
-    \includegraphics{figures/comm_channel_cpu_100n_bar}
-    \caption{Average percentange of 1ms simulation time step spent in different phases of our simulation algorithm when simulating a communication channel with 100 neurons per-population and varying numbers of dimensions}
-    % **TODO** subfigures with most of this caption shared between them would probably be better
-    \label{fig:results/comm-channel-cpu-100n}
-  \end{figure}
+The majority of the 
 
-  \begin{figure}[!t]
-    \includegraphics{figures/comm_channel_cpu_contour}
-    \caption{}
-    \label{fig:results/comm-channel-cpu-contour}
-  \end{figure}
-  
+
+  \begin{figure*}[!t]
+    \centering
+    \subfloat[16-D]{
+      \includegraphics[width=2.5in]{figures/comm_channel_cpu_16d_bar}
+    }
+    \hfil
+    \subfloat[100 neurons per-population]{
+      \includegraphics[width=2.5in]{figures/comm_channel_cpu_100n_bar}
+    }
+    \caption{Average percentange of 1ms simulation time step spent in different phases of our simulation algorithm when simulating communication channels of varying dimensionality using different numbers of neurons.}
+    \label{fig:results/comm-channel-cpu}
+  \end{figure*}
+
   \subsection{Network utilisation}
 
   \textbf{Network utilisation for communication channel, varying neuron count and dimensionality \color{red} Andrew}
@@ -289,7 +309,7 @@ In this section, we use this profiling tool to analyse how the CPU usage of the 
 In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by \textcite{Stewart2010}. 
 In our benchmark, we configure the Basal Ganglia portion of this model to select from a list of semantic pointers and then, based on this, use Thalamus to emit the ``next'' semantic pointer in the list. By recurrently connecting the output of the Thalamus to the input of the Basal Ganglia, our network then iterates through the list of semantic pointers as shown in figure~\ref{fig:results/sequence}.
 
-To demonstrate the run-time savings made possible with our new scheme, we simulated the network for 10s at two different scales using instrumented versions of both the new SpiNNaker simulator and the Nengo reference simulator \parencite{Bekolay2014} running on a standard desktop PC (\SI{3}{\gibi\hertz} AMD Athlon II X3 445). 
+To demonstrate the run-time savings made possible with our new scheme, we simulated the network for 10s at two different scales using instrumented versions of both the new SpiNNaker simulator and the Nengo reference simulator \parencite{Bekolay2014} running on a standard desktop PC (\SI{3}{\giga\hertz} AMD Athlon II X3 445). 
 The results of this process, shown in figure~\ref{fig:results/spa-wall-clock}, illustrate that while  performing the processing required to map the problem to SpiNNaker and transferring data to and from the SpiNNaker board, adds to the simulation time, this is outweighed by the actual simulation time remaining constant, even for relatively small networks.
  
   \begin{figure}[!t]
