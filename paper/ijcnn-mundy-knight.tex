@@ -49,7 +49,10 @@
 }
 
 %% Maths
+\usepackage{amssymb}
 \renewcommand{\vec}{\mathbf}  % Bold vectors
+\newcommand{\semanticpointer}{\textbf}
+\newcommand{\msemanticpointer}[1]{\mbox{\semanticpointer{#1}}}
 
 %% Bibliographies
 \usepackage[backend=bibtex, style=ieee, doi=false, url=false, maxbibnames=7]{biblatex}
@@ -181,19 +184,28 @@ With $i$ indexing neurons in the pre-synaptic population and $j$ those in the po
   \subsection{Assessing the Neural Engineering Framework (NEF)}
   \label{sef:background/assessing}
 
-As discussed in \S\ref{sef:background/nef}, it is entirely possible to translate models built using NEF principles into populations of point neurons, connected with dense synaptic weight matrices. These networks could then, in theory, be simulated using the standard SpiNNaker spiking neural network simulator described in \S\ref{sef:background/nn}. However, in this section, we show that, based on parameters used in the Spaun functional brain model, this approach would be sub-optimal when the constraints of the SpiNNaker platform outlined in \S\ref{sef:background/nn} are taken into account.
+As discussed in \S\ref{sef:background/nef}, it is entirely possible to translate models built using NEF principles into populations of point neurons connected with dense synaptic weight matrices.
+These networks could then, in theory, be simulated using the standard SpiNNaker spiking neural network simulator described in \S\ref{sef:background/nn}.
+In this section we show that, based on parameters used in the Spaun functional brain model, this approach would be sub-optimal given the constraints of the SpiNNaker platform outlined in \S\ref{sef:background/nn}.
 
-The Spaun model is built using the Semantic Pointer Architecture (SPA) \parencite{eliasmith2013build} which uses randomly chosen NEF unit vectors to represent basic concepts ($MOUSE$, $CHEESE$, $SUBJECT$, $OBJECT$, $EAT$, $VERB$). These concepts can then be combined into symbol structures using addition~($+$) and circular convolution~($\otimes$) operators, both functions being performed which are evaluated using the NEF. The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasmith2013build} demonstrates, require around 70 neurons per-dimension to calculate accurately.
+The Spaun model is built using the Semantic Pointer Architecture (SPA) \parencite{eliasmith2013build} which uses randomly chosen NEF unit vectors to represent basic concepts (\semanticpointer{MOUSE}, \semanticpointer{CHEESE}, \semanticpointer{SUBJECT}, \semanticpointer{OBJECT}, \semanticpointer{EAT}, \semanticpointer{VERB}).
+These concepts can then be combined into symbol structures using addition~($+$) and circular convolution~($\circledast$) operators, both functions being performed which are evaluated using the NEF.
+The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasmith2013build} demonstrates, require around 70 neurons per-dimension to calculate accurately.
 
-Using basic concepts represented as vectors and the two operators, a semantic pointer representing the sentence ``Mice eat cheese'' can be calculated as $S=MOUSE \otimes SUBJECT + EAT \otimes VERB + CHEESE \otimes OBJECT$. The subject of this sentence could then be extracted using $S \otimes SUBJECT^{-1} \approx MOUSE$. However, this later process is relatively noisy, meaning that, in order to extract the $MOUSE$ semantic pointer, the result needs to be ``cleaned up''. This process is performed using an auto-associative memory network \parencite{Stewart2011}, the properties of which dictate that in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
+For example a semantic pointer representing the sentence ``Mice eat cheese'' can be calculated as $\msemanticpointer{S} = \msemanticpointer{MOUSE} \circledast \msemanticpointer{SUBJECT} + \msemanticpointer{EAT} \circledast \msemanticpointer{VERB} + \msemanticpointer{CHEESE} \circledast \msemanticpointer{OBJECT}$.
+The subject of this sentence could then be extracted using $\msemanticpointer{S} \circledast \msemanticpointer{SUBJECT}^{-1} \approx \msemanticpointer{MOUSE}$.
+However, this later process is relatively noisy -- to extract the $\msemanticpointer{MOUSE}$ semantic pointer the result needs to be ``cleaned up''.
+This process is performed using an auto-associative memory network \parencite{Stewart2011} the properties of which dictate that, in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
 
-On the basis of these two parameters, we can determine that, functions on these vectors must be evaluated using $3.5\times10^4$ neuron populations, two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries. Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, meaning that the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}. This means that, as each core only has \SI{8}{\mebi\byte} of SDRAM, each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- Several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
+On the basis of these two parameters (500 dimensions and 70 neurons per dimension) we can determine that functions on these vectors must be evaluated using $3.5\times10^4$ neuron populations -- two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries.
+Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, hence the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}.
+As each core only has \SI{8}{\mebi\byte} of SDRAM each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
 
-Based on the analysis performed by \textcite{Eliasmith2004}, the mean squared errors caused by representing linear functions with the NEF can be reduced both by increasing the number of neurons used to represent them and allowing these to fire at a higher rate. 
-However, NEF models such as Spaun typically opt to use less neurons, firing at rates of up to \SI{400}{\hertz}. 
-This means that when using typical tuning curves, neurons fire at an average rate of approximately \SI{100}{\hertz}. 
-On this basis, as \figurename~\ref{fig:results/network-utilisation} shows, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes  per-timestep.
-Due to the dense connectivity matrices used by NEF, each of these spikes will then result in 280 synaptic events, exceeding the synaptic processing constraint of 5000 synaptic events per time-step.
+Representational errors can be reduced both by increasing the number of neurons and allowing these to fire at a higher rate \parencite{Eliasmith2004}. 
+NEF models such as Spaun typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}. 
+Consequently {\color{red} when using typical tuning curves, neurons fire at an average rate of approximately \SI{100}{\hertz}}. 
+\figurename~\ref{fig:results/network-utilisation} shows that, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes per time-step.
+Due to the dense connectivity matrices used by NEF each of these spikes would result in 280 synaptic events -- exceeding the constraint of 5000 synaptic events per time-step.
 
   \begin{figure}[!t]
     \centering
