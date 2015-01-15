@@ -280,15 +280,15 @@ The 69 cycle cost of updating each neuron is a significant improvement over the 
 The reason for this is likely to be due to the the Nengo neuron models use of normalised membrane voltages and having many parameters common to an entire population of neurons. 
 This means that fewer memory instructions are required to transfer each neurons state into the register file when compared to the general purpose SpiNNaker simulator. 
 
-In order to not overload the network interconnect, the simulator waits for \SI{1}{\micro\second} between sending packets in the \textit{output} phase, resulting in the high cost per-dimension shown in equation~\ref{eq:profiling_output}. 
-The remaining terms of equation~\ref{eq:profiling_total} are then approximately synonymous with the synaptic processing stage of the general purpose SpiNNaker simulator analysed in \S\ref{sef:background/assessing}.
+In order to not overload the network interconnect, the simulator waits for \SI{1}{\micro\second} between sending packets in the \textit{output} phase, resulting in the high cost per-dimension shown in (\ref{eq:profiling_output}). 
+The remaining terms of (\ref{eq:profiling_total}) are then approximately synonymous with the synaptic processing stage of the general purpose SpiNNaker simulator analysed in \S\ref{sef:background/assessing}.
 Here the CPU benefits of the new simulation scheme become clear as, when we fit a similar model to the spike-based results shown in \figurename~\ref{fig:results/network-utilisation} we obtain the following equation:
 %
 \begin{equation}
   t = 3 \cdot N^{2}
 \end{equation}
 %
-Which, as $N \gg D$, grows much more rapidly than equation~\ref{eq:profiling_total}.
+Which, as $N \gg D$, grows much more rapidly than (\ref{eq:profiling_total}).
 
   \begin{figure*}[!t]
     \centering
