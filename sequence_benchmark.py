@@ -2,9 +2,9 @@ import datetime
 import nengo
 import nengo.spa as spa
 
-spinnaker = True
+spinnaker = False
 
-dimensions = 32
+dimensions = 16
 
 def profile(name, last):
     now = datetime.datetime.now()
@@ -46,7 +46,7 @@ class Sequence(spa.SPA):
 
 
 
-model = Sequence(16, label='Sequence_Module')
+model = Sequence(8, label='Sequence_Module')
 
 with model:
     #Probe things that will be plotted
