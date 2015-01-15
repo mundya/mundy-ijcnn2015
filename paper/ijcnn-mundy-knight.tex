@@ -249,7 +249,6 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
   \label{sec:exploiting}
-  Previous sections have illustrated how use of the NEF can be expected to result in networks which are not amenable to efficient implementation using the standard SpiNNaker paradigm.
   In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
   % The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.
   % In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores.
@@ -260,11 +259,11 @@ Neural models built using the principals of the NEF may be implemented in any pr
   We can thus \textit{split} the synaptic connection weight matrices into two parts: the ``encoder'' $\alpha_j \vec{e}_j$ and the ``decoder'' $\vec{d}_i$.
   These matrices are of size $N \times D$ and $D \times N$, where $D$ is the ``dimensionality'' of the representation and is generally much smaller than $N$, the number of neurons.
   We can store the encoder in the core that is simulating the post-synaptic population, and we can store the decoder with the pre-synaptic population.
-  This saves significant memory, since the two factors are much smaller than the original weight matrix, and we only need to store one encoder no matter how many sets of input connections there are.
-  However, since the connection weight matrix is split in this way, we no longer send messages for each spike.
+  This saves significant memory since the two factors are much smaller than the original weight matrix and we only need to store one encoder no matter how many sets of input connections there are.
+  However, since the connection weight matrix is split in this way, we can no longer send a packet to represent each spike.
   Rather, the spikes are multiplied by the decoder and the resulting vector value is transmitted.
-  Importantly, since the original weight matrices are perfectly factorable, the result is identical to the original SpiNNaker approach in terms of the neural behaviour, but with significantly reduced memory requirements, and, as we shall show, improved processor and network utilisation.
-  \figurename~\ref{fig:algorithm/spikes} illustrates the old scheme with the full weight matrix stored in the memory of the post-synaptic core and \figurename~\ref{fig:algorithm/values} illustrates the proposed scheme with the factored matrix split across the pre- and post-synaptic cores and with ``value''-packets being transmitted between the processors.
+  Importantly, since the original weight matrices are perfectly factorable, the result is identical to the original SpiNNaker approach in terms of the neural behaviour, but with significantly reduced memory requirements, and, as we shall show, improved processor utilisation.
+  \figurename~\ref{fig:algorithm/spikes} illustrates the scheme with the full weight matrix stored in the memory of the post-synaptic core and \figurename~\ref{fig:algorithm/values} illustrates the proposed scheme with the factored matrix split across the pre- and post-synaptic cores and with ``value''-packets being transmitted between the processors.
 
   \begin{figure*}
     \subfloat[Spike-based transmission]{%
@@ -278,9 +277,9 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
 
   We split the execution time of a processing core into three steps: \textit{input filtering}, \textit{neuron update} and \textit{output}.
-  In the old simulation scheme the ``inputs'' to a processing core were in the form of ``spike'' packets which were used to drive a pipeline which retrieved synaptic weights from SDRAM; in our new scheme the inputs take the form of a set of packets whose payloads can be combined to form a vector.
+  In the ``spike'' simulation scheme the ``inputs'' to a processing core were in the form of ``spike'' packets which were used to drive a pipeline which retrieved synaptic weights from SDRAM; in our proposed scheme the inputs take the form of a set of packets whose payloads can be combined to form a vector.
   For example, the processing core simulating population $B$ from \figurename~\ref{fig:background/comms-channel} will receive two packets per time-step from each of the two cores simulating population $A$ -- combining these packets will form a 2-D vector representing the current decoding of the activity of $A$.
-  At the start of each simulation step the values which were received in this manner are filtered using the appropriate synaptic filter model and then summed to form a single vector which is the current input to the population -- this forms the \textit{input filtering} step.
+  At the start of each simulation step the reconstructed vector is filtered using the appropriate synaptic filter model to form the input to the population -- this is the \textit{input filtering} step.
 
   During the \textit{neuron update} step the state of each neuron is updated in turn.
   First the input for the neuron is computed by calculating the dot product between the encoding vector for the neuron and the current input to the population ($\alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i$ from (\ref{eq:encoding})).
