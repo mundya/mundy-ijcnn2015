@@ -94,9 +94,16 @@ In this section we briefly discuss the SpiNNaker platform and how neural network
 
   \subsection{The SpiNNaker platform}
 
-The SpiNNaker platform is a massively parallel architecture designed to simulate neural networks. A SpiNNaker machine is constructed from a number of SpiNNaker chips, each connected to their six immediate neighbours using a chip-level interconnection network with a toroidal, triangular mesh topology. Each SpiNNaker chip contains 18 ARM processing cores connected, via a network-on-chip, to each other and the external network through a multicast router. Each core has two small tightly-coupled memories: \SI{32}{\kibi\byte} for instructions~(ITCM) and \SI{64}{\kibi\byte} for data~(DTCM) and shares \SI{128}{\mebi\byte} of off-chip SDRAM with the other cores on the SpiNNaker chip.
+The SpiNNaker platform is a massively parallel architecture designed to simulate neural networks.
+A SpiNNaker machine is constructed from a number of SpiNNaker chips, each connected to their six immediate neighbours using a chip-level interconnection network with a toroidal, triangular mesh topology.
+Each SpiNNaker chip contains 18 ARM processing cores connected, via a network-on-chip, to each other and the external network through a multicast router.
+Each core has two small tightly-coupled memories: \SI{32}{\kibi\byte} for instructions~(ITCM) and \SI{64}{\kibi\byte} for data~(DTCM) and shares \SI{128}{\mebi\byte} of off-chip SDRAM with the other cores on the SpiNNaker chip.
 
-SpiNNaker is an event-driven message-passing computing architecture. The software running on a core may transmit packets to other processing cores to indicate the occurrence of events or to share data. A packet consists of a \SI{32}{\bit} key -- which is used to direct the packet around the network -- and, optionally, a \SI{32}{\bit} data payload. When a packet reaches a router the key is inspected to determine to which (if any) of the 18 processors and six external links attached to the router it should be forwarded. On receipt of a packet a core executes a \textit{callback} function which may inspect the packet and schedule further execution as required.
+SpiNNaker is an event-driven message-passing computing architecture.
+The software running on a core may transmit packets to other processing cores to indicate the occurrence of events or to share data.
+A packet consists of a \SI{32}{\bit} key -- which is used to direct the packet around the network and often indicates something of the nature of the event or attached data -- and, optionally, a \SI{32}{\bit} data payload.
+When a packet reaches a router the key is inspected to determine to which (if any) of the 18 processors and six external links attached to the router it should be forwarded.
+On receipt of a packet a core executes a \textit{callback} function which may inspect the packet and schedule further execution as required.
 
   \subsection{Simulating neural nets on SpiNNaker}
   \label{sef:background/nn}
