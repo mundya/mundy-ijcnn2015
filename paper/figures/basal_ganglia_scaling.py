@@ -8,7 +8,7 @@ if __name__ == '__main__':
     # configurations.  We know that the requirements scale with neurons for
     # weight matrices but scale with neurons AND dimensions for factored weight
     # matrices, so we'll test for both cases.
-    n_neurons = [50, 100]
+    n_neurons = [70]
     n_dimensions = [16, 32, 64, 128]  #, 256, 512]
 
     print("# Basal Ganglia Scaling")

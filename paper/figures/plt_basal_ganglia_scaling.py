@@ -1,48 +1,55 @@
 import numpy as np
-from matplotlib import pyplot as plt
-
-try:
-    import seaborn as sns
-    sns.set(context='paper', style='whitegrid')
-except ImportError:
-    print "No seaborn :("
-    pass
 
 if __name__ == '__main__':
     # Read in the data
-    data = np.genfromtxt('basal_ganglia_scale.dat').T
+    data = np.genfromtxt('basal_ganglia_scale.dat')
+    if len(data.shape) == 1:
+        data.shape = (1,) + data.shape
 
-    # Plot each of the dimensions
-    f, axs = plt.subplots(1, 2, figsize=(8, 3.5), sharex=True)
+    # For each row create a new scaling cost table
+    for d in data:
+        # Get the number of neurons per dimension
+        neurons_per_dimension = int(d[0])
+        full_weight_matrix = d[1::2]
+        factored_weight_matrix = d[2::2]
 
-    for i, d in enumerate([16, 32, 64, 128]):
-        axs[0].plot(data[0], data[1 + i*2] / 1024., label="%d dimensions" % d)
-        axs[1].plot(data[0], data[1 + i*2 + 1] / 1024.)
+        # Get the dimensionalities
+        assert len(full_weight_matrix) == len(factored_weight_matrix)
+        dims = [1<<(4+n) for n in range(len(factored_weight_matrix))]
 
-    axs[1].set_xlabel("Number of neurons per Ensemble")
+        # Determine the memory reduction
+        reduction = ((full_weight_matrix - factored_weight_matrix) /
+                     full_weight_matrix)
 
-    axs[0].set_ylabel("Total memory utilisation / MB")
-    axs[1].set_ylabel("Total memory utilisation / MB")
+        # Print the table
+        with open("bgscale_{:d}.tex".format(neurons_per_dimension), "w+") as f:
+            # The header
+            f.write("""
+\\begin{tabular}{r %s}
+  \\toprule
+    Dimensionality & %s \\\\
+  \\midrule\n""" % (
+                        ' '.join(['S'] * len(dims)),
+                        ' & '.join(['{' + str(n) + '}' for n in dims])
+                    )
+            )
 
-    axs[0].set_title("Weight Matrices")
-    axs[1].set_title("Factored Weight Matrices")
+            # The full weight matrix size
+            f.write("    Full weight matrix / \\si{\\mebi\\byte}")
+            for v in full_weight_matrix:
+                f.write(" & {:.2f}".format(v / 1024.0))
+            f.write("\\\\\n")
 
-    axs[0].legend(loc=2)
-    axs[1].legend(loc=2)
+            # The factored weight matrix size
+            f.write("    Factored / \\si{\\mebi\\byte}")
+            for v in factored_weight_matrix:
+                f.write(" & {:.2f}".format(v / 1024.))
+            f.write("\\\\\n")
 
-    plt.tight_layout(h_pad=3)
+            # The reduction
+            f.write("    Reduction / \\si{\\percent}")
+            for v in reduction:
+                f.write(" & {:.2f}".format(v * 100))
+            f.write("\\\\\n")
 
-    f.savefig('basal_ganglia_scaling.png')
-
-    # Generate a table of reductions
-    rdat = list()
-    for d in data.T:
-        dat = list()
-        dat.append(d[0])
-
-        for n in range(4):
-            dat.append((d[1+n*2] - d[2+n*2]) / d[1+n*2])
-
-        rdat.append(dat)
-
-    np.savetxt('bg_reductions.csv', rdat)
+            f.write("  \\bottomrule\n\\end{tabular}\n")

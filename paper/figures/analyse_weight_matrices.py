@@ -26,7 +26,7 @@ def get_weight_matrices_requirements(network):
         pre_neurons = sum(s.n_neurons for s in sources)
         mem_usage += pre_neurons * ens.n_neurons
 
-    return mem_usage
+    return mem_usage * 4. # (4 bytes per value)
 
 
 def get_factored_weight_matrices_requirements(network):
@@ -50,4 +50,4 @@ def get_factored_weight_matrices_requirements(network):
         # Incoming cost is just n_neurons x d
         mem_usage += ens.n_neurons * ens.dimensions
 
-    return mem_usage
+    return mem_usage * 4. # (4 bytes per value)
