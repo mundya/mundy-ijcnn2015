@@ -141,20 +141,27 @@ Reducing the memory usage is important to ensure both that efficient use is made
   \subsection{The Neural Engineering Framework}
   \label{sef:background/nef}
 
-The Neural Engineering Framework (NEF) extends the concept of ``preferred-direction vectors'' \parencite{} to all neural populations. Each population represents a vector within a particular space (typically a hypersphere) and within that population, each neurons firing rate reflects the similarity of the represented vector to its own ``encoding'' vector. Using the notation of \textcite{Stewart2014} this may be expressed as:
+The Neural Engineering Framework (NEF) extends the concept of ``preferred-direction vectors'' \parencite{} to all neural populations.
+Each population represents a vector within a particular space (typically a hypersphere) and within that population, each the firing rate of each neuron reflects the similarity of the represented vector to the ``encoding'' vector for the neuron.
+Using the notation of \textcite{Stewart2014} this may be expressed as:
 
 \begin{equation}
   \delta_{i}\left(\vec{x}\right) = G_{i}\left[ \alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i \right]
   \label{eq:encoding}
 \end{equation}
 
-Which states that the firing response of neuron $i$, $\delta_i$, to the represented value of $\vec{x}$ is the response of the neuron model ($G_{i}$) to an input consisting of a randomly selected gain term ($\alpha_i$), the neurons encoding vector ($\vec{e}_i$) and a fixed bias current $J^{bias}_i$. The process of ``encoding'' allows us to transform a variable in vector form into the spiking response of a population of neurons. Correspondingly, ``decoding'' allows a transformation from the spiking actions of neurons into the domain of vectors. Again using the notation of \textcite{Stewart2014} we can express this decoding process as:
+Which states that the firing response of neuron $i$ ($\delta_i$) to the represented value ($\vec{x}$) is the response of the neuron model ($G_{i}$) to an input consisting of a randomly selected gain term ($\alpha_i$), the encoding vector for the neuron ($\vec{e}_i$) and a fixed bias current ($J^{bias}_i$).
+The process of ``encoding'' allows us to transform a variable in vector form into the spiking response of a population of neurons.
+Correspondingly, ``decoding'' allows a transformation from the spiking actions of neurons into the domain of vectors.
+Again using the notation of \textcite{Stewart2014} we can express this decoding process as:
 
 \begin{equation}
   \vec{\hat{x}} = \sum\limits_{i=1}^{N} a_i(\vec{x})\vec{d}_i  \label{eq:decoding}
 \end{equation}
 
-Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum of the spiking activity of each neuron $a_i$ multiplied by the linear decoder for the neuron $\vec{d}_i$. The decoding vectors $\vec{d}_i$ may be selected to compute a function of the value represented by the population. \figurename \ref{fig:background/nef-1} illustrates the encoding of a two-dimensional value using four neurons -- the role of the encoding vectors can be seen in that each neuron becomes active for only a small range of the input space.
+Where the estimate of the original represented value ($\vec{\hat{x}}$) is the sum of the spiking activity of each neuron ($a_i$) multiplied by the linear decoder for the neuron ($\vec{d}_i$).
+The decoding vectors may be selected to compute a function of the value represented by the population.
+\figurename~\ref{fig:background/nef-1} illustrates the encoding of a two-dimensional value using four neurons -- the role of the encoding vectors can be seen in that each neuron becomes active for only a small range of the input space.
 
   \begin{figure}[!t]
     \includegraphics{figures/nef-1}
@@ -163,7 +170,7 @@ Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum 
   \end{figure}
 
 %% Synaptic filtering
-For a connection between a pair of populations, a, typically dense, synaptic weight matrix can be calculated by taking the matrix product of the pre-synaptic populations decoders and the post-synaptic populations encoders \parencite{Stewart2014}:
+For a connection between a pair of populations a (dense) synaptic weight matrix can be calculated by computing the matrix product of the decoders of the pre-synaptic population and the encoders of the post-synaptic population \parencite{Stewart2014}:
 
 \begin{equation}
   \omega_{ij} = \alpha_j \vec{d_i}\vec{e_j}  \label{eq:weights}
