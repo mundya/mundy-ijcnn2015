@@ -113,7 +113,7 @@ def plot_stack(results, get_x_function, filter_function, title, x_label, filenam
 
 def plot_stack_bar(results, get_x_function, filter_function, title, x_label, filename):
     # Create single-axis figure
-    figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 3), frameon=False)
+    figure, axis = pylab.subplots(figsize=(plot_settings.column_width, 2.5), frameon=False)
     
     # Filter results
     filtered_results = [[get_x_function(r), float(r[7]) * 100.0, float(r[8]) * 100.0, float(r[9]) * 100.0] for r in results if filter_function(r)]
@@ -126,12 +126,11 @@ def plot_stack_bar(results, get_x_function, filter_function, title, x_label, fil
     bar_x = bar_pad + numpy.arange(len(unzipped_results[0]))
     bar_width = 0.5
     
-    cmap = sns.color_palette("colorblind")
-    axis.bar(bar_x, unzipped_results[1], label="Input filtering", color=cmap[0],
+    axis.bar(bar_x, unzipped_results[1], label="Input filtering", color="black",
              width=bar_width, edgecolor="none")
-    axis.bar(bar_x, unzipped_results[2], bottom=unzipped_results[1], label="Neuron update", color=cmap[1],
+    axis.bar(bar_x, unzipped_results[2], bottom=unzipped_results[1], label="Neuron update", color="0.33",
              width=bar_width, edgecolor="none")
-    axis.bar(bar_x, unzipped_results[3], bottom=unzipped_results[2], label="Output", color=cmap[2],
+    axis.bar(bar_x, unzipped_results[3], bottom=unzipped_results[2], label="Output", color="0.66",
              width=bar_width, edgecolor="none")
     
     if title is not None:
@@ -142,7 +141,8 @@ def plot_stack_bar(results, get_x_function, filter_function, title, x_label, fil
     axis.set_xticks(bar_x + (bar_width / 2.))
     axis.set_xticklabels(unzipped_results[0])
 
-    axis.legend(loc='upper left')
+    handles, labels = axis.get_legend_handles_labels()
+    axis.legend(handles[::-1], labels[::-1], loc="upper left")
     
     # Save figure
     figure.tight_layout(pad=0.0)
@@ -179,7 +179,7 @@ plot_stack(results,
     lambda r: int(r[0]) == 16 and int(r[2]) == 0,
     "CPU time when simulating 16D ensembles of varying sizes",
     "Ensemble size")
-'''
+
 plot_contour(results,
     lambda r: int(r[0]),
     lambda r: int(r[1]),
@@ -199,5 +199,5 @@ plot_contour(results,
     "Number of neurons",
     "comm_channel_cpu_contour_no_output.pdf",
     False)
-
+'''
 pylab.show()
