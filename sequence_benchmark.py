@@ -1,9 +1,15 @@
+import datetime
 import nengo
 import nengo.spa as spa
 
-spinnaker = True
+spinnaker = False
 
 dimensions = 16
+
+def profile(name, last):
+    now = datetime.datetime.now()
+    print "%s:%s (%s)" % (name, now, (now - last).total_seconds())
+    return now
 
 class Sequence(spa.SPA):
     def __init__(self, num_actions):
@@ -49,7 +55,9 @@ with model:
 
 #Make a simulator and run it
 if not spinnaker:
+    track = profile("Building", datetime.datetime.now())
     sim = nengo.Simulator(model)
+    profile("Building done", track)
 else:
     import nengo_spinnaker
 
@@ -57,9 +65,11 @@ else:
     for n in model.input.input_nodes.values():
         config[n].f_of_t = True
 
-    sim = nengo_spinnaker.Simulator(model, config=config, machine_name="circe")
+    sim = nengo_spinnaker.Simulator(model, config=config, machine_name="192.168.1.1")
 
-sim.run(2.0)
+track = profile("Running", datetime.datetime.now())
+sim.run(10.0)
+profile("Running done", track)
 
 from matplotlib import pyplot as plt
 figure = plt.figure()
