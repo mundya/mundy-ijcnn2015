@@ -399,7 +399,7 @@ The results of this process, shown in \figurename~\ref{fig:results/spa-wall-cloc
 
   \textcite{Galluppi2012} demonstrated a mapping from models written in Nengo to the SpiNNaker architecture using the older simulation method described in \S\ref{sef:background/nn}.
   This implementation also used the encoding/decoding processes to reduce communication overheads between computational elements, but, unlike the method presented here, only applied it to communication between SpiNNaker and an external computer.
-  Instead, use of spike-based transmission necessitated the storage of complete weight matrices and led to a significant amount of time being required to transfer simulation data to the SpiNNaker machine, \citeauthor{Galluppi2012} suggested that this may be overcome by transmitting encoders and decoders separately and performing the matrix multiplication on SpiNNaker.
+  Instead, use of spike-based transmission necessitated the storage of complete weight matrices and led to a significant amount of time being required to transfer simulation data to the SpiNNaker machine, \citeauthor{Galluppi2012}\ suggested that this may be overcome by transmitting encoders and decoders separately and performing the matrix multiplication on SpiNNaker.
   This would have reduced the load time but would not have solved the problem of the synaptic matrices filling the usable memory, nor the associated issues of spike rates and network usage.
   For the reasons advanced above we believe that this implementation of the NEF on SpiNNaker would not have satisfactorily scaled to simulate models of the scale or complexity of Spaun.
 
