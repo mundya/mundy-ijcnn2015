@@ -159,7 +159,7 @@ On the basis of these two parameters, we can determine that, functions on these 
 Based on the analysis performed by \textcite{Eliasmith2004}, the mean squared errors caused by representing linear functions with the NEF can be reduced both by increasing the number of neurons used to represent them and allowing these to fire at a higher rate. 
 However, NEF models such as Spaun typically opt to use less neurons, firing at rates of up to \SI{400}{\hertz}. 
 This means that when using typical tuning curves, neurons fire at an average rate of approximately \SI{100}{\hertz}. 
-On this basis, as figure \ref{fig:results/network-utilisation} shows, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes  per-timestep.
+On this basis, as \figurename~\ref{fig:results/network-utilisation} shows, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes  per-timestep.
 Due to the dense connectivity matrices used by NEF, each of these spikes will then result in 280 synaptic events, exceeding the synaptic processing constraint of 5000 synaptic events per time-step.
 
   \begin{figure}[!t]
@@ -257,7 +257,7 @@ Neural models built using the principals of the NEF may be implemented in any pr
 In order to measure the CPU usage incurred when running the algorithm described in \S\ref{sec:exploiting} on SpiNNaker, we developed a simple tool to profile SpiNNaker executables by manually defining profiling regions within them.
 
 In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so. 
-Figure~\ref{fig:results/comm-channel-cpu} show how the CPU time spent in the different phases of the algorithm outlined in \S\ref{sec:exploiting} increases with the number of dimensions and neurons. 
+\figurename~\ref{fig:results/comm-channel-cpu} show how the CPU time spent in the different phases of the algorithm outlined in \S\ref{sec:exploiting} increases with the number of dimensions and neurons. 
 As a packet is sent and received every time-step for each dimension, the CPU time spent in both the \textit{input filtering} and \textit{output} phases is only dependant on the dimensionality $D$. On this basis, we fitted the following simple models of CPU time spent in these phases to the profiling data by performing a minimisation of the mean-squared error:
 %
 \begin{eqnarray}
@@ -283,7 +283,7 @@ This means that fewer memory instructions are required to transfer each neurons 
 
 In order to not overload the network interconnect, the simulator waits for \SI{1}{\micro\second} between sending packets in the \textit{output} phase, resulting in the high cost per-dimension shown in equation~\ref{eq:profiling_output}. 
 The remaining terms of equation~\ref{eq:profiling_total} are then approximately synonymous with the synaptic processing stage of the general purpose SpiNNaker simulator analysed in \S\ref{sef:background/assessing}.
-Here the CPU benefits of the new simulation scheme become clear as, when we fit a similar model to the spike-based results shown in figure~\ref{fig:results/network-utilisation} we obtain the following equation:
+Here the CPU benefits of the new simulation scheme become clear as, when we fit a similar model to the spike-based results shown in \figurename~\ref{fig:results/network-utilisation} we obtain the following equation:
 %
 \begin{equation}
   t = 3 \cdot N^{2}
@@ -322,10 +322,10 @@ Which, as $N \gg D$, grows much more rapidly than equation~\ref{eq:profiling_tot
   \label{sec:spa-sequence}
 
 In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by \textcite{Stewart2010}. 
-In our benchmark, we configure the Basal Ganglia portion of this model to select from a list of semantic pointers and then, based on this, use Thalamus to emit the ``next'' semantic pointer in the list. By recurrently connecting the output of the Thalamus to the input of the Basal Ganglia, our network then iterates through the list of semantic pointers as shown in figure~\ref{fig:results/sequence}.
+In our benchmark, we configure the Basal Ganglia portion of this model to select from a list of semantic pointers and then, based on this, use Thalamus to emit the ``next'' semantic pointer in the list. By recurrently connecting the output of the Thalamus to the input of the Basal Ganglia, our network then iterates through the list of semantic pointers as shown in \figurename~\ref{fig:results/sequence}.
 
 To demonstrate the run-time savings made possible with our new scheme, we simulated the network for 10s at two different scales using instrumented versions of both the new SpiNNaker simulator and the Nengo reference simulator \parencite{Bekolay2014} running on a standard desktop PC (\SI{3}{\giga\hertz} AMD Athlon II X3 445). 
-The results of this process, shown in figure~\ref{fig:results/spa-wall-clock}, illustrate that while  performing the processing required to map the problem to SpiNNaker and transferring data to and from the SpiNNaker board, adds to the simulation time, this is outweighed by the actual simulation time remaining constant, even for relatively small networks.
+The results of this process, shown in \figurename~\ref{fig:results/spa-wall-clock}, illustrate that while  performing the processing required to map the problem to SpiNNaker and transferring data to and from the SpiNNaker board, adds to the simulation time, this is outweighed by the actual simulation time remaining constant, even for relatively small networks.
  
   \begin{figure}[!t]
     \includegraphics{figures/sequence}
