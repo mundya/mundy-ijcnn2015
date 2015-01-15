@@ -28,11 +28,11 @@ bar_x = bar_pad + numpy.arange(2) * 1.5
 
 # Colour strings
 cmap = sns.color_palette("colorblind")
-colours = {
-    "build" : cmap[0],
-    "load" : cmap[1],
-    "simulate" : cmap[2],
-    "download" : cmap[3]
+hatches = {
+    "build" : { "color" : "0.5" }, 
+    "load" :  { "hatch" : "||", "color" : "white" },
+    "simulate" : { "color" : "0.75" },
+    "download" : { "hatch" : "||||", "color" : "white" } 
 }
 
 # Full labels
@@ -48,8 +48,8 @@ def stack(data, offset, legend):
     # Loop through stack
     bottom = numpy.zeros(2)
     for (key, times) in data:
-        axis.bar(bar_x + offset, times, bottom=bottom, label=labels[key] if legend else "_", color=colours[key],
-                 width=bar_width, edgecolor="none")
+        axis.bar(bar_x + offset, times, bottom=bottom, label=labels[key] if legend else "_",
+                 width=bar_width, **hatches[key])
         bottom += times
 
 def get_total(data, experiment_index):
@@ -74,7 +74,8 @@ axis.set_xticklabels(["Nengo", "SpiNNaker", "Nengo", "SpiNNaker"], size="xx-smal
 axis.text(bar_x[0] + bar_width, -35.0, "16 dimensions\n8 actions", horizontalalignment="center", size="small")
 axis.text(bar_x[1] + bar_width, -35.0, "32 dimensions\n16 actions", horizontalalignment="center", size="small")
 
-axis.legend(loc="upper left")
+handles, labels = axis.get_legend_handles_labels()
+axis.legend(handles[::-1], labels[::-1], loc="upper left")
 
 # Save figure
 figure.tight_layout(pad=0.0)
