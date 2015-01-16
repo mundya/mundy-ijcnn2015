@@ -1,5 +1,5 @@
 %% Diagram to illustrate the algorithm
-\documentclass[8pt, tikz]{standalone}
+\documentclass[8pt, tikz, convert={density=600}]{standalone}
 
 \usepackage{times}
 
@@ -144,9 +144,9 @@
     \draw [link] (B_decoder.east) -- ++(50pt, 0);
 
     %% Hide the earlier part of A and the latter part of B
-    \fill [fill opacity=0.75, white]
+    \fill [fill opacity=0.5, white]
     ([xshift=-2.5pt] A_4.west |- A.north west) rectangle ([xshift=-50pt] A.south west);
-    \fill [fill opacity=0.75, white]
+    \fill [fill opacity=0.5, white]
       (B_4.east |- B.north east) rectangle ([xshift=50pt] B.south east);
 
     %% Label the sections of the pipeline
@@ -193,9 +193,9 @@
     \draw [link] (B_mux.north) -- ++(50pt, 0);
 
     %% Hide the earlier part of A and the latter part of B
-    \fill [fill opacity=0.75, white]
+    \fill [fill opacity=0.5, white]
     ([xshift=-2.5pt] A_4.west |- A.north west) rectangle ([xshift=-50pt] A.south west);
-    \fill [fill opacity=0.75, white]
+    \fill [fill opacity=0.5, white]
       (B_4.east |- B.north east) rectangle ([xshift=50pt] B.south east);
 
     %% Label the sections of the pipeline
