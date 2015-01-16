@@ -292,6 +292,7 @@ An indication of the number of cycles spent in these phases was determined by fi
   \mathrm{c}_\mathrm{output} & = 100 + 702 D \label{eq:profiling_output}
 \end{align}
 %
+Where $\mathrm{c}_\mathrm{input}$ and $\mathrm{c}_\mathrm{output}$ are measured in cycles, \num{200000} of which are available per \SI{1}{\milli\second} simulation time-step when the processor is running at \SI{200}{\mega\hertz}.
 During the \textit{neuron update} stage the dot product between the $D$-dimensional input vector and the $D$-dimensional encoder vector is computed for each of the $N$ neurons.
 Additionally, when a neuron spikes it is decoded by adding its $D$-dimensional decoding vector to the current output.
 Consequently the compute requirement of the \textit{neuron update} stage is a function of the both the dimensionality and the number of neurons.
@@ -301,25 +302,28 @@ To model this we again fitted a simple, 1st order, 2-D model to the profiling da
   \mathrm{c}_\mathrm{neuron} = 188 + 69 N + 13 N D\label{eq:profiling_neuron}
 \end{equation}
 %
-Adding these equations together we can model the total CPU usage as:
+Adding these equations together we can model the total CPU cycle count as:
 %
 \begin{equation}
   \mathrm{c}_\mathrm{total} = 533 + 745 D + 69 N + 13 N D\label{eq:profiling_total}
 \end{equation}
 %
-The 69 cycle cost of updating each neuron is a significant improvement over the 128 cycles quoted by \textcite{Sharp2013} and is likely due to the NEF LIF model requiring fewer memory accesses than the model assessed by \citeauthor{Sharp2013}.
-
-In the \textit{output phase} a \SI{1}{\micro\second} delay is inserted between transmitting packets in an attempt to avoid overloading the network interconnect.
-This is the primary cause for the high cost per dimension of this stage (\ref{eq:profiling_output}).
-The remaining terms of (\ref{eq:profiling_total}) are then analogous to the synaptic processing stage of the general purpose SpiNNaker simulator analysed in \S\ref{sef:background/assessing}.
-The CPU benefits of the proposed simulation scheme are evident when a similar model is fitted to the spike-based results shown in \figurename~\ref{fig:results/network-utilisation}.
-In this case the computational cost (in cycles) is:
+Which, in the one dimensional case matches our experimental findings that our new simulator can simulate over 2000 neurons -- double the SpiNNaker system's architectural target of 1000 \parencite{}. 
+By substituting $D=1$ into (\ref{eq:profiling_total}), we can see that the maximum number of neurons that could be supported in the 1-D case is 2423 - Reflecting the maximum of 2000 that. 
+In order to compare this model with the spike-based communication model discussed in \S\ref{sef:background/assessing}, we can further simplify (\ref{eq:profiling_total}) by substituting $D=\frac{N}{70}$ to reflect Eliasmith's \parencite{eliasmith2013build} analysis:
 %
 \begin{equation}
-  \mathrm{c}_\mathrm{spike-based} = 3 N^{2}
+  \mathrm{c}_\mathrm{total} = 533 + 80 N + 0.19 N^{2}\label{eq:profiling_total_eliasmith}
 \end{equation}
 %
-Which, as $N \gg D$, grows much more rapidly than (\ref{eq:profiling_total}).
+Finally, using the CPU cycle estimates for updating neuronal state and processing incoming synaptic events quoted by \textcite{Sharp2013} and the incoming spike rates measured in \S\ref{sef:background/assessing}, we can build a similar model of the CPU cycle count of the standard SpiNNaker simulator:
+%
+\begin{equation}
+  \mathrm{c}_\mathrm{spike-based-total} = 128N + 3 N^{2}\label{eq:profiling_spike_based_total}
+\end{equation}
+% 
+These models show that our implementation requires significantly fewer CPU cycles per neuron than the general purpose SpiNNaker simulator, allowing it to simulate up to 834 neurons per-core in this configuration. 
+This is more than $3.5 \times$ more than the 236 per core that the general purpose SpiNNaker simulator can achieve.
 
 %% More exposition here
 
