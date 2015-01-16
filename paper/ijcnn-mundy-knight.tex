@@ -5,8 +5,7 @@
   This work is partially supported by the European Union under grant nos. FP7-604102 (HBP), FP7-287701 (BrainScales-Extension), and ERC-320689 (BIMPC), and by grant EP/G015740/1 (BIMPA).
 }
 
-%% Document properties (~ is a non-breaking space)
-\title{Using Factored~Weight~Matrices for an efficient SpiNNaker implementation of the Neural~Engineering~Framework}
+\title{An efficient SpiNNaker implementation of the Neural~Engineering~Framework}
 \author{%
   \IEEEauthorblockN{Andrew~Mundy and Jamie~Knight}
   \IEEEauthorblockA{School of Computer Science,\\
@@ -50,7 +49,11 @@
 }
 
 %% Maths
+\usepackage{amsmath}
+\usepackage{amssymb}
 \renewcommand{\vec}{\mathbf}  % Bold vectors
+\newcommand{\semanticpointer}{\textbf}
+\newcommand{\msemanticpointer}[1]{\mbox{\semanticpointer{#1}}}
 
 %% Bibliographies
 \usepackage[backend=bibtex, style=ieee, doi=false, url=false, maxbibnames=7]{biblatex}
@@ -61,26 +64,33 @@
   \maketitle
 
   \begin{abstract}
-
-Building and simulating neural systems is a promising avenue in our search for understanding how the brain may work and for how neural and cognitive systems may be employed to tackle engineering problems. The Neural Engineering Framework (NEF) is an interesting hypothesis about how such systems may be constructed and has recently being used to build the world's first functional brain model. However, while the NEF simplifies the design of complex neural networks, simulating these using standard computer hardware is still computationally expensive -- often running far slower than biological real-time and scaling very poorly: problems the SpiNNaker neuromorphic simulator was designed to solve. In this paper we (1) argue that employing the model of computation used for simulating general purpose spiking neural networks on SpiNNaker for NEF models is sub-optimal, and (2) provide and evaluate an alternative simulation scheme which overcomes the memory and communication challenges posed by the NEF.
-
+Building and simulating neural systems is a promising avenue in our search for understanding how the brain may work and for how neural and cognitive systems may be employed to tackle engineering problems.
+The Neural Engineering Framework (NEF) is an interesting hypothesis about how such systems may be constructed and has recently been used to build the world's first functional brain model, Spaun.
+However, while the NEF simplifies the design of complex neural networks simulating these using standard computer hardware is still computationally expensive -- often running far slower than biological real-time and scaling very poorly: problems the SpiNNaker neuromorphic simulator was designed to solve.
+In this paper we (1) argue that employing the same model of computation used for simulating general purpose spiking neural networks on SpiNNaker for NEF models is sub-optimal, and (2) provide and evaluate an alternative simulation scheme which overcomes the memory and compute challenges posed by the NEF.
+The method we describe is capable of simulating up to \num{2000} neurons on a processing core and results in the order of a \SI{90}{\percent} reduction in memory used to store synaptic connection weights.
   \end{abstract}
 
   \section{Introduction}
 
 For a given power budget, two factors limit the simulation of neural networks on any computing platform: scale and time. In principle any scale of network may be simulated but as scale increases simulation time follows.
-Conversely, if the simulation time is limited (for example, if biological real-time is necessary) then only a limited scale of network may be simulated. Specialised ``neuromorphic'' hardware tries to avoid these constraints by parallelising and distributing computational effort and relying on dense interconnection of the computing elements.
+Conversely, if the simulation time is limited (for example, if biological real-time is necessary) then only a limited scale of network may be simulated.
+Specialised \textit{neuromorphic} hardware tries to avoid these constraints by parallelising and distributing computational effort and relying on dense interconnection of the computing elements.
 The SpiNNaker platform \parencite{Furber2014} is one of a range of neuromorphic simulators (including Neurogrid \parencite{Benjamin2014}, BrainScaleS \parencite{Schemmel2010} and lately TrueNorth \parencite{Merolla2014}) which should benefit investigators of embodied cognition and researchers of large neural models alike by enabling scalable, rapid simulation of large-scale neural networks.
 
-The Neural Engineering Framework (NEF) \parencite{Eliasmith2004} is a hypothesis about how neurons may act to encode the abstract mathematical constructs, such as scalars and vectors, that we often use in modelling the real world. Its successes so far include the Spaun model of cognition \parencite{Eliasmith2012} and applications in embedded robotics (e.g., \parencite{Stewart2015ip}). As with all neural systems, the NEF has proven costly to simulate with simulations of the Spaun model typically taking \SI{2.5}{\hour} of simulation time for \SI{1}{\second} of simulation \parencite[\S V]{Stewart2014}. Two aspects of NEF networks that make them particularily costly to simulate are the high firing rates of individual neurons (around \SIrange{200}{400}{\hertz} when saturated) and the dense synaptic matrices used to connect neuronal populations. The former presents a significant communication cost to any specialised neuromorphic hardware and the latter requires that large amounts of memory be used to represent the neural network with all the associated costs of transferring large blocks of data that implies.
+The Neural Engineering Framework (NEF) \parencite{Eliasmith2004} is a hypothesis about how neurons may act to encode the abstract mathematical constructs, such as scalars and vectors, that we often use in modelling the real world.
+Its successes so far include the Spaun model of cognition \parencite{Eliasmith2012}.
+As with all neural systems, the NEF has proven costly to simulate: the Spaun model typically required \SI{2.5}{\hour} of compute time for \SI{1}{\second} of simulation \parencite[\S V]{Stewart2014}.
+Two aspects of NEF networks that make them particularly costly to simulate are the high firing rates of individual neurons (around \SIrange{200}{400}{\hertz} when saturated) and the dense synaptic matrices used to connect neuronal populations.
+The former presents a significant communication cost to any specialised neuromorphic hardware and the latter requires that large amounts of memory be used to represent the neural network with all the associated costs of transferring large blocks of data that implies.
 
   In this paper we:
   \begin{enumerate}
-    \item argue that due to these properties of the NEF, the existing solutions and algorithms used to simulate neural networks on SpiNNaker will not satisfactorily scale to Spaun-like models,
-    \item detail a method by which features of the NEF may be used to reduce the communication and memory costs associated with its simulation.
+    \item argue that due to these properties of the NEF, the existing solutions and algorithms used to simulate neural networks on SpiNNaker will not scale satisfactorily to Spaun-like models,
+    \item detail a method by which features of the NEF may be used to reduce the memory and compute costs associated with its simulation.
   \end{enumerate}
 
-The result is a model of computation similar to the data-flow computer which we hope to use in running the full Spaun model in biological real-time.
+We hope to use the result to run the full Spaun model in biological real-time -- a \num{9000} times speedup.
 
   \section{Background}
 
@@ -88,47 +98,73 @@ In this section we briefly discuss the SpiNNaker platform and how neural network
 
   \subsection{The SpiNNaker platform}
 
-The SpiNNaker platform is a massively parallel architecture designed to simulate neural networks. A SpiNNaker machine is constructed from a number of SpiNNaker chips, each connected to their six immediate neighbours using a chip-level interconnection network with a toroidal, triangular mesh topology. Each SpiNNaker chip contains 18 ARM processing cores connected, via a network-on-chip, to each other and the external network through a multicast router. Each core has two small tightly-coupled memories: \SI{32}{\kibi\byte} for instructions~(ITCM) and \SI{64}{\kibi\byte} for data~(DTCM) and shares \SI{128}{\mebi\byte} of off-chip SDRAM with the other cores on the SpiNNaker chip.
+The SpiNNaker platform is a massively parallel architecture designed to simulate neural networks.
+A SpiNNaker machine is constructed from a number of SpiNNaker chips, each connected to their six immediate neighbours using a chip-level interconnection network with a toroidal, triangular mesh topology.
+Each SpiNNaker chip contains 18 ARM processing cores connected, via a network-on-chip, to each other and the external network through a multicast router.
+Each core has two small tightly-coupled memories: \SI{32}{\kibi\byte} for instructions~(ITCM) and \SI{64}{\kibi\byte} for data~(DTCM) and shares \SI{128}{\mebi\byte} of off-chip SDRAM with the other cores on the SpiNNaker chip.
 
-SpiNNaker is an event-driven message-passing computing architecture. The software running on a core may transmit packets to other processing cores to indicate the occurrence of events or to share data. A packet consists of a \SI{32}{\bit} key -- which is used to direct the packet around the network -- and, optionally, a \SI{32}{\bit} data payload. When a packet reaches a router the key is inspected to determine to which (if any) of the 18 processors and six external links attached to the router it should be forwarded. On receipt of a packet a core executes a \textit{callback} function which may inspect the packet and schedule further execution as required.
+SpiNNaker is an event-driven message-passing computing architecture.
+The software running on a core may transmit packets to other processing cores to indicate the occurrence of events or to share data.
+A packet consists of a \SI{32}{\bit} key -- which is used to direct the packet around the network and often indicates something of the nature of the event or attached data -- and, optionally, a \SI{32}{\bit} data payload.
+When a packet reaches a router the key is inspected to determine to which (if any) of the 18 processors and six external links attached to the router it should be forwarded.
+On receipt of a packet a core executes a \textit{callback} function which may inspect the packet and schedule further execution as required.
 
   \subsection{Simulating neural nets on SpiNNaker}
   \label{sef:background/nn}
 
-When simulating neural nets on a SpiNNaker machine, each core is responsible for simulating a number (in the order of a few hundred) of point neurons. When one of these neuron spikes, it transmits a packet whose key uniquely identifies the neuron (for this it requires no payload). This ``spike'' packet is then routed across the network fabric to the processing cores responsible for simulating each of the neurons that are synaptically connected to the firing neuron. On receipt of a ``spike'' packet, a core retrieves the row of the connectivity matrix associated with the firing neuron from SDRAM. Each of these rows describes the synaptic weights and delays associated with the connections between the firing neuron and those simulated on the core. Once a row is retrived, the weights are inserted into an input ring-buffer where they remain until the synaptic delay has elapsed and they are used to calculate the neuronal input current.
+When simulating neural nets on a SpiNNaker machine each core is responsible for simulating a number (in the order of a few hundred) of point neurons.
+When one of these neuron spikes it transmits a packet whose key uniquely identifies the neuron (for this it requires no payload).
+This ``spike'' packet is then routed across the network fabric to the processing cores responsible for simulating each of the neurons that are synaptically connected to the firing neuron.
+On receipt of a ``spike'' packet a core retrieves the row of the connectivity matrix associated with the firing neuron from SDRAM.
+Each of these rows describes the synaptic weights and delays associated with the connections between the firing neuron and those simulated on the core.
+Once a row is retrieved the weights are inserted into an input ring-buffer where they remain until the synaptic delay has elapsed when they are used to calculate the neuronal input current.
 
-There are three primary constraints to the number of neurons that may be simulated on a single processing core:
+There are two primary constraints to the number of neurons that may be simulated on a single processing core:
 
   \begin{enumerate}
     \item The amount of memory required to store the synaptic weight matrices must fit within the space available to the core.
-    \item As \textcite{Sharp2013} discuss, the majority of processing time is spent in the synaptic processing pipeline so there must be sufficient time for the core to process all incoming `spike' packets; and retrieve and process the synaptic rows during one simulation time-step.
+    \item The majority of processing time is spent in the synaptic processing pipeline, so there must be sufficient time for the core to process all incoming `spike' packets; and retrieve and process the synaptic rows during one simulation time-step (see \parencite{Sharp2013}).
   \end{enumerate}
 
+Each core is allocated $\frac{1}{16}$ of the \SI{128}{\mebi\byte} SDRAM and hence the synaptic matrices must fit within \SI{8}{\mebi\byte} of memory -- this forms the first constraint.
+The second constraint is related to both the number of spikes received per time-step and the density of the synaptic matrix: \textcite[\S III.C]{Sharp2013} indicate that at most there may be \num{5000} synaptic events per millisecond when running at biological real-time.
+A single synaptic event indicates one spike being passed through a single synapse to a neuron on the receiving core.
+
 These constraints may be met by either allocating fewer neurons to each processing core or by increasing the processing time used for each simulation time-step.
+In practice there are limits to the number of processors and the amount of time that are available (though one aim of the SpiNNaker project is to build a machine consisting of one million cores).
+Hard time constraints are necessary when SpiNNaker is required to run in biological real-time, as it is in experiments with other neuromorphic hardware.
+Processor constraints are present for those with access to only small SpiNNaker machines.
+At some point it is necessary to ensure that efficient use is made of the machine with regard to both time and processor usage.
 
-In practice there are limits to the number of processors and the amount of time that are available (though one aim of the SpiNNaker project is to build a machine consisting of one million cores). Hard time constraints are necessary when SpiNNaker is required to run in biological real-time, as it is in experiments with other neuromorphic hardware. Processor constraints are present for those with access to only small SpiNNaker machines. At some point it is necessary to ensure that efficient use is made of the machine with regard to both time and processor usage.
-
-To a first approximation the first constraint is that the synaptic matrices for a core's neurons must fit within $\frac{128}{16} = \SI{8}{\mebi\byte}$ and \textcite[\S III.C]{Sharp2013} measure the second constraint as being around \num{5000} synaptic events per millisecond.
-
-It should be noted that time is also a factor \textit{prior} to the start of any simulation. All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, consequently the more data required on the machine the greater the time required to prepare it for simulation. \textcite{Sharp2013} note that this can take a significant period of time and that this is undesirable if a real-time simulator is desired.
+It should be noted that time is also a factor \textit{prior} to the start of any simulation.
+All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, consequently the more data required on the machine the greater the time required to prepare it for simulation.
+\textcite{Sharp2013} note that this can take a significant period of time and that this is undesirable if a real-time simulator is desired.
+Reducing the memory usage is important to ensure both that efficient use is made of processing cores but also that the time required to load data to a SpiNNaker machine is reasonable.
 
   \subsection{The Neural Engineering Framework}
   \label{sef:background/nef}
 
-The Neural Engineering Framework (NEF) extends the concept of ``preferred-direction vectors'' \parencite{} to all neural populations. Each population represents a vector within a particular space (typically a hypersphere) and within that population, each neurons firing rate reflects the similarity of the represented vector to its own ``encoding'' vector. Using the notation of \textcite{Stewart2014} this may be expressed as:
+The Neural Engineering Framework (NEF) extends the concept of ``preferred-direction vectors'' \parencite{} to all neural populations.
+Each population represents a vector within a particular space (typically a hypersphere) and within that population, each the firing rate of each neuron reflects the similarity of the represented vector to the ``encoding'' vector for the neuron.
+Using the notation of \textcite{Stewart2014} this may be expressed as:
 
 \begin{equation}
   \delta_{i}\left(\vec{x}\right) = G_{i}\left[ \alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i \right]
   \label{eq:encoding}
 \end{equation}
 
-Which states that the firing response of neuron $i$, $\delta_i$, to the represented value of $\vec{x}$ is the response of the neuron model ($G_{i}$) to an input consisting of a randomly selected gain term ($\alpha_i$), the neurons encoding vector ($\vec{e}_i$) and a fixed bias current $J^{bias}_i$. The process of ``encoding'' allows us to transform a variable in vector form into the spiking response of a population of neurons. Correspondingly, ``decoding'' allows a transformation from the spiking actions of neurons into the domain of vectors. Again using the notation of \textcite{Stewart2014} we can express this decoding process as:
+Which states that the firing response of neuron $i$ ($\delta_i$) to the represented value ($\vec{x}$) is the response of the neuron model ($G_{i}$) to an input consisting of a randomly selected gain term ($\alpha_i$), the encoding vector for the neuron ($\vec{e}_i$) and a fixed bias current ($J^{bias}_i$).
+The process of ``encoding'' allows us to transform a variable in vector form into the spiking response of a population of neurons.
+Correspondingly, ``decoding'' allows a transformation from the spiking actions of neurons into the domain of vectors.
+Again using the notation of \textcite{Stewart2014} we can express this decoding process as:
 
 \begin{equation}
   \vec{\hat{x}} = \sum\limits_{i=1}^{N} a_i(\vec{x})\vec{d}_i  \label{eq:decoding}
 \end{equation}
 
-Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum of the spiking activity of each neuron $a_i$ multiplied by the linear decoder for the neuron $\vec{d}_i$. The decoding vectors $\vec{d}_i$ may be selected to compute a function of the value represented by the population. \figurename \ref{fig:background/nef-1} illustrates the encoding of a two-dimensional value using four neurons -- the role of the encoding vectors can be seen in that each neuron becomes active for only a small range of the input space.
+Where the estimate of the original represented value ($\vec{\hat{x}}$) is the sum of the spiking activity of each neuron ($a_i$) multiplied by the linear decoder for the neuron ($\vec{d}_i$).
+The decoding vectors may be selected to compute a function of the value represented by the population.
+\figurename~\ref{fig:background/nef-1} illustrates the encoding of a two-dimensional value using four neurons -- the role of the encoding vectors can be seen in that each neuron becomes active for only a small range of the input space.
 
   \begin{figure}[!t]
     \includegraphics{figures/nef-1}
@@ -137,7 +173,7 @@ Where the estimate of the original represented value $\vec{\hat{x}}$ is the sum 
   \end{figure}
 
 %% Synaptic filtering
-For a connection between a pair of populations, a, typically dense, synaptic weight matrix can be calculated by taking the matrix product of the pre-synaptic populations decoders and the post-synaptic populations encoders \parencite{Stewart2014}:
+For a connection between a pair of populations a (dense) synaptic weight matrix can be calculated by computing the matrix product of the decoders of the pre-synaptic population and the encoders of the post-synaptic population \parencite{Stewart2014}:
 
 \begin{equation}
   \omega_{ij} = \alpha_j \vec{d_i}\vec{e_j}  \label{eq:weights}
@@ -148,19 +184,28 @@ With $i$ indexing neurons in the pre-synaptic population and $j$ those in the po
   \subsection{Assessing the Neural Engineering Framework (NEF)}
   \label{sef:background/assessing}
 
-As discussed in \S\ref{sef:background/nef}, it is entirely possible to translate models built using NEF principles into populations of point neurons, connected with dense synaptic weight matrices. These networks could then, in theory, be simulated using the standard SpiNNaker spiking neural network simulator described in \S\ref{sef:background/nn}. However, in this section, we show that, based on parameters used in the Spaun functional brain model, this approach would be sub-optimal when the constraints of the SpiNNaker platform outlined in \S\ref{sef:background/nn} are taken into account.
+As discussed in \S\ref{sef:background/nef}, it is entirely possible to translate models built using NEF principles into populations of point neurons connected with dense synaptic weight matrices.
+These networks could then, in theory, be simulated using the standard SpiNNaker spiking neural network simulator described in \S\ref{sef:background/nn}.
+In this section we show that, based on parameters used in the Spaun functional brain model, this approach would be sub-optimal given the constraints of the SpiNNaker platform outlined in \S\ref{sef:background/nn}.
 
-The Spaun model is built using the Semantic Pointer Architecture (SPA) \parencite{eliasmith2013build} which uses randomly chosen NEF unit vectors to represent basic concepts ($MOUSE$, $CHEESE$, $SUBJECT$, $OBJECT$, $EAT$, $VERB$). These concepts can then be combined into symbol structures using addition~($+$) and circular convolution~($\otimes$) operators, both functions being performed which are evaluated using the NEF. The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasmith2013build} demonstrates, require around 70 neurons per-dimension to calculate accurately.
+The Spaun model is built using the Semantic Pointer Architecture (SPA) \parencite{eliasmith2013build} which uses randomly chosen NEF unit vectors to represent basic concepts (\semanticpointer{MOUSE}, \semanticpointer{CHEESE}, \semanticpointer{SUBJECT}, \semanticpointer{OBJECT}, \semanticpointer{EAT}, \semanticpointer{VERB}).
+These concepts can then be combined into symbol structures using addition~($+$) and circular convolution~($\circledast$) operators, both functions being performed which are evaluated using the NEF.
+The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasmith2013build} demonstrates, require around 70 neurons per-dimension to calculate accurately.
 
-Using basic concepts represented as vectors and the two operators, a semantic pointer representing the sentence ``Mice eat cheese'' can be calculated as $S=MOUSE \otimes SUBJECT + EAT \otimes VERB + CHEESE \otimes OBJECT$. The subject of this sentence could then be extracted using $S \otimes SUBJECT^{-1} \approx MOUSE$. However, this later process is relatively noisy, meaning that, in order to extract the $MOUSE$ semantic pointer, the result needs to be ``cleaned up''. This process is performed using an auto-associative memory network \parencite{Stewart2011}, the properties of which dictate that in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
+For example a semantic pointer representing the sentence ``Mice eat cheese'' can be calculated as $\msemanticpointer{S} = \msemanticpointer{MOUSE} \circledast \msemanticpointer{SUBJECT} + \msemanticpointer{EAT} \circledast \msemanticpointer{VERB} + \msemanticpointer{CHEESE} \circledast \msemanticpointer{OBJECT}$.
+The subject of this sentence could then be extracted using $\msemanticpointer{S} \circledast \msemanticpointer{SUBJECT}^{-1} \approx \msemanticpointer{MOUSE}$.
+However, this later process is relatively noisy -- to extract the $\msemanticpointer{MOUSE}$ semantic pointer the result needs to be ``cleaned up''.
+This process is performed using an auto-associative memory network \parencite{Stewart2011} the properties of which dictate that, in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
 
-On the basis of these two parameters, we can determine that, functions on these vectors must be evaluated using $3.5\times10^4$ neuron populations, two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries. Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, meaning that the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}. This means that, as each core only has \SI{8}{\mebi\byte} of SDRAM, each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- Several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
+On the basis of these two parameters (500 dimensions and 70 neurons per dimension) we can determine that functions on these vectors must be evaluated using populations of $3.5\times10^4$ neurons -- two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries.
+Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, hence the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}.
+As each core only has \SI{8}{\mebi\byte} of SDRAM each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
 
-Based on the analysis performed by \textcite{Eliasmith2004}, the mean squared errors caused by representing linear functions with the NEF can be reduced both by increasing the number of neurons used to represent them and allowing these to fire at a higher rate. 
-However, NEF models such as Spaun typically opt to use less neurons, firing at rates of up to \SI{400}{\hertz}. 
-This means that when using typical tuning curves, neurons fire at an average rate of approximately \SI{100}{\hertz}. 
-On this basis, as \figurename~\ref{fig:results/network-utilisation} shows, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes  per-timestep.
-Due to the dense connectivity matrices used by NEF, each of these spikes will then result in 280 synaptic events, exceeding the synaptic processing constraint of 5000 synaptic events per time-step.
+Representational errors can be reduced both by increasing the number of neurons and allowing these to fire at a higher rate \parencite{Eliasmith2004}. 
+NEF models such as Spaun typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}. 
+Consequently {\color{red} when using typical tuning curves, neurons fire at an average rate of approximately \SI{100}{\hertz}}. 
+\figurename~\ref{fig:results/network-utilisation} shows that, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes per time-step.
+Due to the dense connectivity matrices used by NEF each of these spikes would result in 280 synaptic events -- exceeding the constraint of 5000 synaptic events per time-step.
 
   \begin{figure}[!t]
     \centering
@@ -169,28 +214,9 @@ Due to the dense connectivity matrices used by NEF, each of these spikes will th
     \label{fig:results/network-utilisation}
   \end{figure}
 
-  \subsection{Constructing models with the NEF}
-\label{sef:background/constructing}
-Neural models built using the principals of the NEF may be implemented in any programming language, however, a standard Python library for building and simulating these models has been developed. Nengo \parencite{Bekolay2014} provides several core components which may be used to specify models for simulation:
-
-  \begin{description}[\IEEEsetlabelwidth{Connections}]
-    \item[Ensembles] A population of neurons with their attendant encoders.
-    \item[Nodes] General purpose non-neural components, typically used to inject values into simulations or to drive real-world actuators.
-    \item[Connections] Specify how nodes and ensembles are connected.
-    \item[Probes] Allow gathering of simulation data for later analysis.
-  \end{description}
-
-  An illustrative model that we will use later in this paper is the \textit{communication channel}. A communication channel consists of two ensembles connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble. The concept is illustrated in \figurename~\ref{fig:background/comms-channel}. Using Nengo a communication channel may be constructed as:
-
-  \begin{lstlisting}
-  with nengo.Network('Communication Channel') as comms_channel:
-      # 2 100 neuron ensembles, each of 2-dimensions
-      ens_a = nengo.Ensemble(100, 2)
-      ens_b = nengo.Ensemble(100, 2)
-
-      # Connection from A to B with the identity function
-      nengo.Connection(ens_a, ens_b)
-  \end{lstlisting}
+  An illustrative model that we will use later in this paper is the \textit{communication channel}.
+  A communication channel consists of two populations connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble.
+  The concept is illustrated in \figurename~\ref{fig:background/comms-channel}.
 
   \begin{figure}
     \centering
@@ -204,7 +230,6 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
   \label{sec:exploiting}
-  Previous sections have illustrated how use of the NEF can be expected to result in networks which are not amenable to efficient implementation using the standard SpiNNaker paradigm.
   In this section we review an alternative simulation scheme that will meet the constraints of the SpiNNaker hardware for a large range of networks constructed using the NEF.
   % The NEF permits us two different views of the activity of a neural population: that of spikes and that of a set of time-varying vectors.
   % In our simulation scheme we use the second of these to facilitate communication of neural activity between processing cores.
@@ -215,11 +240,11 @@ Neural models built using the principals of the NEF may be implemented in any pr
   We can thus \textit{split} the synaptic connection weight matrices into two parts: the ``encoder'' $\alpha_j \vec{e}_j$ and the ``decoder'' $\vec{d}_i$.
   These matrices are of size $N \times D$ and $D \times N$, where $D$ is the ``dimensionality'' of the representation and is generally much smaller than $N$, the number of neurons.
   We can store the encoder in the core that is simulating the post-synaptic population, and we can store the decoder with the pre-synaptic population.
-  This saves significant memory, since the two factors are much smaller than the original weight matrix, and we only need to store one encoder no matter how many sets of input connections there are.
-  However, since the connection weight matrix is split in this way, we no longer send messages for each spike.
+  This saves significant memory since the two factors are much smaller than the original weight matrix and we only need to store one encoder no matter how many sets of input connections there are.
+  However, since the connection weight matrix is split in this way, we can no longer send a packet to represent each spike.
   Rather, the spikes are multiplied by the decoder and the resulting vector value is transmitted.
-  Importantly, since the original weight matrices are perfectly factorable, the result is identical to the original SpiNNaker approach in terms of the neural behaviour, but with significantly reduced memory requirements, and, as we shall show, improved processor and network utilisation.
-  \figurename~\ref{fig:algorithm/spikes} illustrates the old scheme with the full weight matrix stored in the memory of the post-synaptic core and \figurename~\ref{fig:algorithm/values} illustrates the proposed scheme with the factored matrix split across the pre- and post-synaptic cores and with ``value''-packets being transmitted between the processors.
+  Importantly, since the original weight matrices are perfectly factorable, the result is identical to the original SpiNNaker approach in terms of the neural behaviour, but with significantly reduced memory requirements, and, as we shall show, improved processor utilisation.
+  \figurename~\ref{fig:algorithm/spikes} illustrates the scheme with the full weight matrix stored in the memory of the post-synaptic core and \figurename~\ref{fig:algorithm/values} illustrates the proposed scheme with the factored matrix split across the pre- and post-synaptic cores and with ``value''-packets being transmitted between the processors.
 
   \begin{figure*}
     \subfloat[Spike-based transmission]{%
@@ -233,9 +258,9 @@ Neural models built using the principals of the NEF may be implemented in any pr
 
 
   We split the execution time of a processing core into three steps: \textit{input filtering}, \textit{neuron update} and \textit{output}.
-  In the old simulation scheme the ``inputs'' to a processing core were in the form of ``spike'' packets which were used to drive a pipeline which retrieved synaptic weights from SDRAM; in our new scheme the inputs take the form of a set of packets whose payloads can be combined to form a vector.
+  In the ``spike'' simulation scheme the ``inputs'' to a processing core were in the form of ``spike'' packets which were used to drive a pipeline which retrieved synaptic weights from SDRAM; in our proposed scheme the inputs take the form of a set of packets whose payloads can be combined to form a vector.
   For example, the processing core simulating population $B$ from \figurename~\ref{fig:background/comms-channel} will receive two packets per time-step from each of the two cores simulating population $A$ -- combining these packets will form a 2-D vector representing the current decoding of the activity of $A$.
-  At the start of each simulation step the values which were received in this manner are filtered using the appropriate synaptic filter model and then summed to form a single vector which is the current input to the population -- this forms the \textit{input filtering} step.
+  At the start of each simulation step the reconstructed vector is filtered using the appropriate synaptic filter model to form the input to the population -- this is the \textit{input filtering} step.
 
   During the \textit{neuron update} step the state of each neuron is updated in turn.
   First the input for the neuron is computed by calculating the dot product between the encoding vector for the neuron and the current input to the population ($\alpha_i \vec{e}_i \cdot \vec{x} + J^{bias}_i$ from (\ref{eq:encoding})).
@@ -254,42 +279,53 @@ Neural models built using the principals of the NEF may be implemented in any pr
   \label{sec:results}
 
   \subsection{Processor utilisation}
-In order to measure the CPU usage incurred when running the algorithm described in \S\ref{sec:exploiting} on SpiNNaker, we developed a simple tool to profile SpiNNaker executables by manually defining profiling regions within them.
+To measure the CPU usage incurred when running the algorithm described in \S\ref{sec:exploiting} on SpiNNaker we developed a simple tool to profile SpiNNaker executables.
+In this section we use this profiling tool to analyse how the CPU usage of the ensembles in the communication channel network described in \S\ref{sef:background/constructing} vary with number of dimensions and neurons.
+\figurename~\ref{fig:results/comm-channel-cpu} shows how the proportion of CPU time spent in the different phases of the algorithm outlined in \S\ref{sec:exploiting} varies with both dimensionality and neuron count.
 
-In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so. 
-\figurename~\ref{fig:results/comm-channel-cpu} show how the CPU time spent in the different phases of the algorithm outlined in \S\ref{sec:exploiting} increases with the number of dimensions and neurons. 
-As a packet is sent and received every time-step for each dimension, the CPU time spent in both the \textit{input filtering} and \textit{output} phases is only dependant on the dimensionality $D$. On this basis, we fitted the following simple models of CPU time spent in these phases to the profiling data by performing a minimisation of the mean-squared error:
+The \textit{input filtering} and \textit{output} stages of the algorithm respectively transmit and receive one packet per simulation time-step for every dimension.
+Thus the CPU time spent in both phases is predominantly a function of the number dimensions, $D$.
+An indication of the number of cycles spent in these phases was determined by fitting the following simple models to the profiling data by performing a minimisation of the mean-squared error:
 %
-\begin{eqnarray}
-  t_{input} & = & 245 + 43 \cdot D \label{eq:profiling_input}\\
-  t_{output} & = & 100 + 702 \cdot D \label{eq:profiling_output}
-\end{eqnarray}
+\begin{align}
+  \mathrm{c}_\mathrm{input} & = 245 + 43 D \label{eq:profiling_input}\\
+  \mathrm{c}_\mathrm{output} & = 100 + 702 D \label{eq:profiling_output}
+\end{align}
 %
-As each neuron needs to apply its encoder vector to the filtered input and, if it spikes, add its decoder vector to the output buffer, the time spent in the \textit{neuron update} phase is dependant both on the dimensionality as well as the number of neurons $N$. To model this, we again fitted a simple, 1st order, 2-D model to the profiling data by performing a minimisation of the mean-squared error:
-%
-\begin{equation}
-  t_{neuron} = 188 + 69 \cdot N + 13 \cdot N \cdot D\label{eq:profiling_neuron}
-\end{equation}
-%
-By adding these equations together, we can model the total CPU usage as follows:
+Where $\mathrm{c}_\mathrm{input}$ and $\mathrm{c}_\mathrm{output}$ are measured in cycles, \num{200000} of which are available per \SI{1}{\milli\second} simulation time-step when the processor is running at \SI{200}{\mega\hertz}.
+During the \textit{neuron update} stage the dot product between the $D$-dimensional input vector and the $D$-dimensional encoder vector is computed for each of the $N$ neurons.
+Additionally, when a neuron spikes it is decoded by adding its $D$-dimensional decoding vector to the current output.
+Consequently the compute requirement of the \textit{neuron update} stage is a function of the both the dimensionality and the number of neurons.
+To model this we again fitted a simple, 1st order, 2-D model to the profiling data by performing a minimisation of the mean-squared error:
 %
 \begin{equation}
-  t = 533 + 745 \cdot D + 69 \cdot N + 13 \cdot N \cdot D\label{eq:profiling_total}
+  \mathrm{c}_\mathrm{neuron} = 188 + 69 N + 13 N D\label{eq:profiling_neuron}
 \end{equation}
 %
-The 69 cycle cost of updating each neuron is a significant improvement over the 128 cycles quoted by \textcite{Sharp2013}. 
-The reason for this is likely to be due to the the Nengo neuron models use of normalised membrane voltages and having many parameters common to an entire population of neurons. 
-This means that fewer memory instructions are required to transfer each neurons state into the register file when compared to the general purpose SpiNNaker simulator. 
+Adding these equations together we can model the total CPU cycle count as:
+%
+\begin{equation}
+  \mathrm{c}_\mathrm{total} = 533 + 745 D + 69 N + 13 N D\label{eq:profiling_total}
+\end{equation}
+%
+Which, in the one dimensional case matches our experimental findings that our new simulator can simulate over 2000 neurons -- double the SpiNNaker system's architectural target of 1000 \parencite{}. 
+By substituting $D=1$ into (\ref{eq:profiling_total}), we can see that the maximum number of neurons that could be supported in the 1-D case is 2423 - Reflecting the maximum of 2000 that. 
+In order to compare this model with the spike-based communication model discussed in \S\ref{sef:background/assessing}, we can further simplify (\ref{eq:profiling_total}) by substituting $D=\frac{N}{70}$ to reflect Eliasmith's \parencite{eliasmith2013build} analysis:
+%
+\begin{equation}
+  \mathrm{c}_\mathrm{total} = 533 + 80 N + 0.19 N^{2}\label{eq:profiling_total_eliasmith}
+\end{equation}
+%
+Finally, using the CPU cycle estimates for updating neuronal state and processing incoming synaptic events quoted by \textcite{Sharp2013} and the incoming spike rates measured in \S\ref{sef:background/assessing}, we can build a similar model of the CPU cycle count of the standard SpiNNaker simulator:
+%
+\begin{equation}
+  \mathrm{c}_\mathrm{spike-based-total} = 128N + 3 N^{2}\label{eq:profiling_spike_based_total}
+\end{equation}
+% 
+These models show that our implementation requires significantly fewer CPU cycles per neuron than the general purpose SpiNNaker simulator, allowing it to simulate up to 834 neurons per-core in this configuration. 
+This is more than $3.5 \times$ more than the 236 per core that the general purpose SpiNNaker simulator can achieve.
 
-In order to not overload the network interconnect, the simulator waits for \SI{1}{\micro\second} between sending packets in the \textit{output} phase, resulting in the high cost per-dimension shown in equation~\ref{eq:profiling_output}. 
-The remaining terms of equation~\ref{eq:profiling_total} are then approximately synonymous with the synaptic processing stage of the general purpose SpiNNaker simulator analysed in \S\ref{sef:background/assessing}.
-Here the CPU benefits of the new simulation scheme become clear as, when we fit a similar model to the spike-based results shown in \figurename~\ref{fig:results/network-utilisation} we obtain the following equation:
-%
-\begin{equation}
-  t = 3 \cdot N^{2}
-\end{equation}
-%
-Which, as $N \gg D$, grows much more rapidly than equation~\ref{eq:profiling_total}.
+%% More exposition here
 
   \begin{figure*}[!t]
     \centering
@@ -306,14 +342,13 @@ Which, as $N \gg D$, grows much more rapidly than equation~\ref{eq:profiling_tot
 
   \subsection{Memory utilisation}
 
-  The dense synaptic weight matrix for any connection between populations of neurons in the NEF will be of size $N_\mathrm{pre} \times N_\mathrm{post}$ and, under the spike based algorithm, would be stored entirely in the memory of the post-synaptic core.
-  When factored weight matrices are substituted for the full weight matrix, as described in \S\ref{sec:exploiting}, then the memory usage is split between the pre- and post-synaptic cores.
-  The post-synaptic core needs to store a single encoder matrix of size $D_\mathrm{post} N_\mathrm{post}$ while the pre-synaptic core will store a decoder matrix of size $D_\mathrm{post} N_\mathrm{pre}$.
+  The dense synaptic weight matrix for any connection between populations of $N_\mathrm{pre}$ and $N_\mathrm{post}$ neurons in the NEF will be of size $N_\mathrm{pre} \times N_\mathrm{post}$ and, under the spike based algorithm, would be stored entirely in the memory of the post-synaptic core.
+  When factored weight matrices are substituted for the full weight matrix, as described in \S\ref{sec:exploiting}, the memory usage is split between the pre- and post-synaptic cores.
+  The post-synaptic core needs to store a single encoder matrix of size $D_\mathrm{post} N_\mathrm{post}$ while the pre-synaptic core will store a decoder matrix of size $D_\mathrm{pre} N_\mathrm{pre}$, where $D_\mathrm{population}$ is the dimensionality of the population.
 
-  As an example, in the case of a 16-D communication channel with \num{1120} pre-synaptic neurons and the same number of post-synaptic neurons the full weight matrix will require \num{1254400} values to be stored in the memory of the post-synaptic core.
-  If factored weight matrices are used then the pre-synaptic core must store \num{17920} values and the post-synaptic core the same.
-  The post-synaptic core will not need to store any more data for any further incoming connections.
-  Using, as is common, \SI{32}{\bit} to store each value this becomes \SI{4.79}{\mebi\byte} to store the full weight matrix or \SI{70.00}{\kibi\byte} to store the encoder and the same for the decoder (a total of \SI{140.00}{\kibi\byte}).
+  For example, a 16-D communication channel constructed from two \num{1120}-neuron populations will require \num{1254400} values to be stored in the memory of the post-synaptic core to represent the full weight matrix.
+  If factored weight matrices are used then both the pre-synaptic core must store \num{17920} values, though the post-synaptic core will not need to store any more data for any further incoming connections.
+  Using, as is common, \SI{32}{\bit} to store each value this becomes \SI{4.79}{\mebi\byte} to store the full weight matrix or \SI{70.00}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.00}{\kibi\byte}).
   Factored weight matrices achieve a saving~of~\SI{97.14}{\percent}.
 
   \begin{table}
@@ -326,18 +361,25 @@ Which, as $N \gg D$, grows much more rapidly than equation~\ref{eq:profiling_tot
     \raggedright Memory usage of the synaptic weights (full matrix and factored) for the standard Basal Ganglia implementation from Nengo (70 neurons per dimension).
   \end{table}
 
-  Table~\ref{tab:results/memory-bg70} shows the memory usage from the connections within the basal ganglia model used in the Spaun model.
-  The reduction in memory usage that results from using factored weight matrices is significant -- it should be noted that for a basal ganglia accepting \num{128}-D inputs representing the connection weights would require the SDRAM of nearly five SpiNNaker chips if full weight matrices were used.
+  Table~\ref{tab:results/memory-bg70} shows the memory usage from the connections within the basal ganglia model used in Spaun.
+  The reduction in memory usage that results from using factored weight matrices is significant -- indeed, it should be noted that for a basal ganglia accepting \num{128}-D inputs representing the connection weights would require the SDRAM of nearly five SpiNNaker chips if full weight matrices were used.
 
   \subsection{Simulating large-scale models}
   \label{sec:spa-sequence}
 
-In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by \textcite{Stewart2010}. 
-In our benchmark, we configure the Basal Ganglia portion of this model to select from a list of semantic pointers and then, based on this, use Thalamus to emit the ``next'' semantic pointer in the list. By recurrently connecting the output of the Thalamus to the input of the Basal Ganglia, our network then iterates through the list of semantic pointers as shown in \figurename~\ref{fig:results/sequence}.
+  To illustrate the correctness of our technique, and to provide a comparison between SpiNNaker and the reference NEF implementation (Nengo \parencite{Bekolay2014}), we simulated a larger model which contains several components of Spaun.
+  This benchmark is based on a model of action selection developed by \textcite{Stewart2010}.
+  A population of neurons is used to represent a state.
+  This population is connected to a model of the basal ganglia which acts to determine the next state.
+  Once the next state has been determined a model of the thalamus changes the input of the state-population to effect the change to this next state.
+  If the components of the model are connected recurrently the state machine can continue indefinitely.
+  A sample of the current state of the model is shown in \figurename~\ref{fig:results/sequence}.
 
-To demonstrate the run-time savings made possible with our new scheme, we simulated the network for 10s at two different scales using instrumented versions of both the new SpiNNaker simulator and the Nengo reference simulator \parencite{Bekolay2014} running on a standard desktop PC (\SI{3}{\giga\hertz} AMD Athlon II X3 445). 
-The results of this process, shown in \figurename~\ref{fig:results/spa-wall-clock}, illustrate that while  performing the processing required to map the problem to SpiNNaker and transferring data to and from the SpiNNaker board, adds to the simulation time, this is outweighed by the actual simulation time remaining constant, even for relatively small networks.
- 
+  We simulated this model for \SI{10}{\second} using a SpiNNaker machine and the standard NEF implementation on a standard desktop PC (\SI{3}{\giga\hertz} AMD Athlon II X3 445).
+  \figurename~\ref{fig:results/spa-wall-clock} shows the time required to perform certain stages of preparing, uploading data to the SpiNNaker machine, executing the model and retrieving data for two scales of model.
+  As expected, SpiNNaker is able to perform the simulation in biological real-time and is thus significantly faster than Nengo for this example despite the additional overheads.
+  It is likely that as the scale and complexity of models increase the overheads will follow, but this should be less than the expected growth in simulation time on the PC.
+
   \begin{figure}[!t]
     \includegraphics{figures/sequence}
     \caption{Comparing the output of the action selection against a list of 4 semantic pointers, labelled $A$, $B$, $C$ and $D$ - showing sequence behaviour.}
@@ -353,11 +395,11 @@ The results of this process, shown in \figurename~\ref{fig:results/spa-wall-cloc
 
   \subsection{Comparison to prior SpiNNaker implementations}
 
-  \textcite{Galluppi2012} demonstrated a mapping from models written in Nengo to the SpiNNaker architecture using the older simulation method described in \S\ref{sef:background/nn}.
-  This implementation also used the encoding/decoding processes to reduce communication overheads between computational elements, but, unlike the method presented here, only applied it to communication between SpiNNaker and an external computer.
-  Instead, use of spike-based transmission necessitated the storage of complete weight matrices and led to a significant amount of time being required to transfer simulation data to the SpiNNaker machine, \citeauthor{Galluppi2012} suggested that this may be overcome by transmitting encoders and decoders separately and performing the matrix multiplication on SpiNNaker.
-  This would have reduced the load time but would not have solved the problem of the synaptic matrices filling the usable memory, nor the associated issues of spike rates and network usage.
-  For the reasons advanced above we believe that this implementation of the NEF on SpiNNaker would not have satisfactorily scaled to simulate models of the scale or complexity of Spaun.
+  \textcite{Galluppi2012} demonstrated a SpiNNaker implementation of the NEF using the method described in \S\ref{sef:background/nn}.
+  For the reasons advanced above we believe that it would not have been possible to successfully simulate models of the scale or complexity of Spaun.
+  First hand experience with this system indicated that the load time required to transfer full synaptic matrices to a SpiNNaker machine could be extensive; to avoid this \citeauthor*{Galluppi2012}\ suggested transmitting factored weight matrices and performing their multiplication on SpiNNaker.
+  While this would have reduced the load time it may have resulted in poor accuracy due to the lack of floating point hardware on SpiNNaker.
+  Moreover, it would have neither reduced the amount of memory that would be required on SpiNNaker nor reduced the overloading of the processors due to high spike rates and would still have resulted in inefficient use of the architecture.
 
   \subsection{Comparison to other neuromorphic simulators}
 
