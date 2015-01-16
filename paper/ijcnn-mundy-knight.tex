@@ -408,15 +408,20 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
 
   \subsection{Comparison to general purpose computer simulators}
 
-  \S\ref{sec:spa-sequence} illustrated how the SpiNNaker compared to the Python implementation of Nengo when simulating models of a communication channel and a more complicated example highlighting features of the NEF and SPA.
-  For some scales of models it may be expected that the overheads of specialised hardware (including SpiNNaker) are sufficiently great that simulation on standard computing hardware and GPUs can be expected to be faster.
-  When this is the case, the Python implementation of Nengo of \textcite[\S6]{Bekolay2014} is shown to compare favourably with several standard neural simulators (Brian \parencite{Goodman2009}, NEURON \parencite{carnevale2006neuron} and NEST \parencite{Gewaltig2007}) on a range of networks, and an OpenCL implementation of Nengo is shown to perform even better but is only demonstrated on feed-forward networks.
-  However, when simulating models on the scale of Spaun we expect the simulation scheme detailed in this paper to provide substantial speed improvements over standard computing hardware even when the overheads are taken into account; moreover as SpiNNaker is a real-time simulator we expect it to perform well in conjunction with neuromorphic sensors or actuators.
+  The reference implementation of the NEF is Nengo \parencite{Bekolay2014}.
+  This defines a backend-agnostic set of elements that can be used to construct networks using the principles of the NEF, and a simulation tool which uses the same technique of factoring weight matrices that we have exploited here to reduce memory usage.
+  \textcite*{Bekolay2014}\ show that this reference implementation performs well in comparison to alternative PC-based neural simulators such as Brian \parencite{Goodman2009}, NEURON \parencite{carnevale2006neuron} and NEST \parencite{Gewaltig2007}.
+
+  We have extended the work of \citeauthor*{Bekolay2014} by indicating specific reductions in memory usage and by transferring the factored weight matrix simulation scheme to a distributed computing architecture.
+  A particular advantage of the SpiNNaker architecture is that it will simulate networks in biological real-time regardless of model scale and complexity (see \figurename~\ref{fig:results/spa-wall-clock}) where this is not possible for commodity hardware.
+  Furthermore, as a real-time system it is able to interface with neuromorphic hardware (e.g., artificial retinas \parencite{}, or cochleas \parencite{}).
 
   \subsection{General applicability of the algorithm}
 
-  SpiNNaker is a example of a message passing architecture -- consequently we expect that our simulation scheme, transmitting decodings of ensemble activity rather than spike activity, to be equally applicable to simulating neural nets on any message passing distributed architecture.
-  Despite this the particular advantages of SpiNNaker (low-power and real-time) suggest that it is a good choice of platform on which to simulate large-scale neural models.
+  As SpiNNaker is an example of a message passing architecture we expect that our simulation scheme, transmitting decoded representations of ensemble activity rather than spike activity, to be equally applicable to simulating neural nets on any message passing distributed architecture, such as MPI.
+
+  Factored weight matrices may be applicable to further types of synaptic matrix.
+  We have specifically optimised for the case where the factorisations of all connections terminating at a given population may share the same encoder matrix, but this need not be the case.
 
   \subsection{Future work}
 
