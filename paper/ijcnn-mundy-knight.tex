@@ -339,14 +339,13 @@ Which, as $N \gg D$, grows much more rapidly than (\ref{eq:profiling_total}).
 
   \subsection{Memory utilisation}
 
-  The dense synaptic weight matrix for any connection between populations of neurons in the NEF will be of size $N_\mathrm{pre} \times N_\mathrm{post}$ and, under the spike based algorithm, would be stored entirely in the memory of the post-synaptic core.
-  When factored weight matrices are substituted for the full weight matrix, as described in \S\ref{sec:exploiting}, then the memory usage is split between the pre- and post-synaptic cores.
-  The post-synaptic core needs to store a single encoder matrix of size $D_\mathrm{post} N_\mathrm{post}$ while the pre-synaptic core will store a decoder matrix of size $D_\mathrm{post} N_\mathrm{pre}$.
+  The dense synaptic weight matrix for any connection between populations of $N_\mathrm{pre}$ and $N_\mathrm{post}$ neurons in the NEF will be of size $N_\mathrm{pre} \times N_\mathrm{post}$ and, under the spike based algorithm, would be stored entirely in the memory of the post-synaptic core.
+  When factored weight matrices are substituted for the full weight matrix, as described in \S\ref{sec:exploiting}, the memory usage is split between the pre- and post-synaptic cores.
+  The post-synaptic core needs to store a single encoder matrix of size $D_\mathrm{post} N_\mathrm{post}$ while the pre-synaptic core will store a decoder matrix of size $D_\mathrm{pre} N_\mathrm{pre}$, where $D_\mathrm{population}$ is the dimensionality of the population.
 
-  As an example, in the case of a 16-D communication channel with \num{1120} pre-synaptic neurons and the same number of post-synaptic neurons the full weight matrix will require \num{1254400} values to be stored in the memory of the post-synaptic core.
-  If factored weight matrices are used then the pre-synaptic core must store \num{17920} values and the post-synaptic core the same.
-  The post-synaptic core will not need to store any more data for any further incoming connections.
-  Using, as is common, \SI{32}{\bit} to store each value this becomes \SI{4.79}{\mebi\byte} to store the full weight matrix or \SI{70.00}{\kibi\byte} to store the encoder and the same for the decoder (a total of \SI{140.00}{\kibi\byte}).
+  For example, a 16-D communication channel constructed from two \num{1120}-neuron populations will require \num{1254400} values to be stored in the memory of the post-synaptic core to represent the full weight matrix.
+  If factored weight matrices are used then both the pre-synaptic core must store \num{17920} values, though the post-synaptic core will not need to store any more data for any further incoming connections.
+  Using, as is common, \SI{32}{\bit} to store each value this becomes \SI{4.79}{\mebi\byte} to store the full weight matrix or \SI{70.00}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.00}{\kibi\byte}).
   Factored weight matrices achieve a saving~of~\SI{97.14}{\percent}.
 
   \begin{table}
@@ -359,8 +358,8 @@ Which, as $N \gg D$, grows much more rapidly than (\ref{eq:profiling_total}).
     \raggedright Memory usage of the synaptic weights (full matrix and factored) for the standard Basal Ganglia implementation from Nengo (70 neurons per dimension).
   \end{table}
 
-  Table~\ref{tab:results/memory-bg70} shows the memory usage from the connections within the basal ganglia model used in the Spaun model.
-  The reduction in memory usage that results from using factored weight matrices is significant -- it should be noted that for a basal ganglia accepting \num{128}-D inputs representing the connection weights would require the SDRAM of nearly five SpiNNaker chips if full weight matrices were used.
+  Table~\ref{tab:results/memory-bg70} shows the memory usage from the connections within the basal ganglia model used in Spaun.
+  The reduction in memory usage that results from using factored weight matrices is significant -- indeed, it should be noted that for a basal ganglia accepting \num{128}-D inputs representing the connection weights would require the SDRAM of nearly five SpiNNaker chips if full weight matrices were used.
 
   \subsection{Simulating large-scale models}
   \label{sec:spa-sequence}
