@@ -198,7 +198,7 @@ The subject of this sentence could then be extracted using $\msemanticpointer{S}
 However, this later process is relatively noisy -- to extract the $\msemanticpointer{MOUSE}$ semantic pointer the result needs to be ``cleaned up''.
 This process is performed using an auto-associative memory network \parencite{Stewart2011} the properties of which dictate that, in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
 
-On the basis of these two parameters (500 dimensions and 70 neurons per dimension) we can determine that functions on these vectors must be evaluated using $3.5\times10^4$ neuron populations -- two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries.
+On the basis of these two parameters (500 dimensions and 70 neurons per dimension) we can determine that functions on these vectors must be evaluated using populations of $3.5\times10^4$ neurons -- two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries.
 Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, hence the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}.
 As each core only has \SI{8}{\mebi\byte} of SDRAM each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
 
