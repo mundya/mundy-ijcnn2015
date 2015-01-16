@@ -126,16 +126,15 @@ There are two primary constraints to the number of neurons that may be simulated
     \item The majority of processing time is spent in the synaptic processing pipeline, so there must be sufficient time for the core to process all incoming `spike' packets; and retrieve and process the synaptic rows during one simulation time-step (see \parencite{Sharp2013}).
   \end{enumerate}
 
-These constraints may be met by either allocating fewer neurons to each processing core or by increasing the processing time used for each simulation time-step.
+Each core is allocated $\frac{1}{16}$ of the \SI{128}{\mebi\byte} SDRAM and hence the synaptic matrices must fit within \SI{8}{\mebi\byte} of memory -- this forms the first constraint.
+The second constraint is related to both the number of spikes received per time-step and the density of the synaptic matrix: \textcite[\S III.C]{Sharp2013} indicate that at most there may be \num{5000} synaptic events per millisecond when running at biological real-time.
+A single synaptic event indicates one spike being passed through a single synapse to a neuron on the receiving core.
 
+These constraints may be met by either allocating fewer neurons to each processing core or by increasing the processing time used for each simulation time-step.
 In practice there are limits to the number of processors and the amount of time that are available (though one aim of the SpiNNaker project is to build a machine consisting of one million cores).
 Hard time constraints are necessary when SpiNNaker is required to run in biological real-time, as it is in experiments with other neuromorphic hardware.
 Processor constraints are present for those with access to only small SpiNNaker machines.
 At some point it is necessary to ensure that efficient use is made of the machine with regard to both time and processor usage.
-
-Each core is allocated $\frac{1}{16}$ of the \SI{128}{\mebi\byte} SDRAM and hence the synaptic matrices must fit within \SI{8}{\mebi\byte} of memory -- this forms the first constraint.
-The second constraint is related to both the number of spikes received per time-step and the density of the synaptic matrix: \textcite[\S III.C]{Sharp2013} indicate that at most there may be \num{5000} synaptic events per millisecond when running at biological real-time.
-A single synaptic event indicates one spike being passed through a single synapse to a neuron on the receiving core.
 
 It should be noted that time is also a factor \textit{prior} to the start of any simulation.
 All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, consequently the more data required on the machine the greater the time required to prepare it for simulation.
