@@ -214,28 +214,9 @@ Due to the dense connectivity matrices used by NEF each of these spikes would re
     \label{fig:results/network-utilisation}
   \end{figure}
 
-  \subsection{Constructing models with the NEF}
-\label{sef:background/constructing}
-Neural models built using the principals of the NEF may be implemented in any programming language, however, a standard Python library for building and simulating these models has been developed. Nengo \parencite{Bekolay2014} provides several core components which may be used to specify models for simulation:
-
-  \begin{description}[\IEEEsetlabelwidth{Connections}]
-    \item[Ensembles] A population of neurons with their attendant encoders.
-    \item[Nodes] General purpose non-neural components, typically used to inject values into simulations or to drive real-world actuators.
-    \item[Connections] Specify how nodes and ensembles are connected.
-    \item[Probes] Allow gathering of simulation data for later analysis.
-  \end{description}
-
-  An illustrative model that we will use later in this paper is the \textit{communication channel}. A communication channel consists of two ensembles connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble. The concept is illustrated in \figurename~\ref{fig:background/comms-channel}. Using Nengo a communication channel may be constructed as:
-
-  \begin{lstlisting}
-  with nengo.Network('Communication Channel') as comms_channel:
-      # 2 100 neuron ensembles, each of 2-dimensions
-      ens_a = nengo.Ensemble(100, 2)
-      ens_b = nengo.Ensemble(100, 2)
-
-      # Connection from A to B with the identity function
-      nengo.Connection(ens_a, ens_b)
-  \end{lstlisting}
+  An illustrative model that we will use later in this paper is the \textit{communication channel}.
+  A communication channel consists of two populations connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble.
+  The concept is illustrated in \figurename~\ref{fig:background/comms-channel}.
 
   \begin{figure}
     \centering
