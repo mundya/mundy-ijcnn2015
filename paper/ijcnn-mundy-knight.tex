@@ -364,12 +364,19 @@ Which, as $N \gg D$, grows much more rapidly than (\ref{eq:profiling_total}).
   \subsection{Simulating large-scale models}
   \label{sec:spa-sequence}
 
-In this section we evaluate the performance of our new simulation scheme by simulating a larger NEF network based around the model of action selection developed by \textcite{Stewart2010}. 
-In our benchmark, we configure the Basal Ganglia portion of this model to select from a list of semantic pointers and then, based on this, use Thalamus to emit the ``next'' semantic pointer in the list. By recurrently connecting the output of the Thalamus to the input of the Basal Ganglia, our network then iterates through the list of semantic pointers as shown in \figurename~\ref{fig:results/sequence}.
+  To illustrate the correctness of our technique, and to provide a comparison between SpiNNaker and the reference NEF implementation (Nengo \parencite{Bekolay2014}), we simulated a larger model which contains several components of Spaun.
+  This benchmark is based on a model of action selection developed by \textcite{Stewart2010}.
+  A population of neurons is used to represent a state.
+  This population is connected to a model of the basal ganglia which acts to determine the next state.
+  Once the next state has been determined a model of the thalamus changes the input of the state-population to effect the change to this next state.
+  If the components of the model are connected recurrently the state machine can continue indefinitely.
+  A sample of the current state of the model is shown in \figurename~\ref{fig:results/sequence}.
 
-To demonstrate the run-time savings made possible with our new scheme, we simulated the network for 10s at two different scales using instrumented versions of both the new SpiNNaker simulator and the Nengo reference simulator \parencite{Bekolay2014} running on a standard desktop PC (\SI{3}{\giga\hertz} AMD Athlon II X3 445). 
-The results of this process, shown in \figurename~\ref{fig:results/spa-wall-clock}, illustrate that while  performing the processing required to map the problem to SpiNNaker and transferring data to and from the SpiNNaker board, adds to the simulation time, this is outweighed by the actual simulation time remaining constant, even for relatively small networks.
- 
+  We simulated this model for \SI{10}{\second} using a SpiNNaker machine and the standard NEF implementation on a standard desktop PC (\SI{3}{\giga\hertz} AMD Athlon II X3 445).
+  \figurename~\ref{fig:results/spa-wall-clock} shows the time required to perform certain stages of preparing, uploading data to the SpiNNaker machine, executing the model and retrieving data for two scales of model.
+  As expected, SpiNNaker is able to perform the simulation in biological real-time and is thus significantly faster than Nengo for this example despite the additional overheads.
+  It is likely that as the scale and complexity of models increase the overheads will follow, but this should be less than the expected growth in simulation time on the PC.
+
   \begin{figure}[!t]
     \includegraphics{figures/sequence}
     \caption{Comparing the output of the action selection against a list of 4 semantic pointers, labelled $A$, $B$, $C$ and $D$ - showing sequence behaviour.}
