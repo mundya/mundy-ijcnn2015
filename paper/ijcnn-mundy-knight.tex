@@ -49,6 +49,7 @@
 }
 
 %% Maths
+\usepackage{amsmath}
 \usepackage{amssymb}
 \renewcommand{\vec}{\mathbf}  % Bold vectors
 \newcommand{\semanticpointer}{\textbf}
@@ -279,42 +280,49 @@ Due to the dense connectivity matrices used by NEF each of these spikes would re
   \label{sec:results}
 
   \subsection{Processor utilisation}
-In order to measure the CPU usage incurred when running the algorithm described in \S\ref{sec:exploiting} on SpiNNaker, we developed a simple tool to profile SpiNNaker executables by manually defining profiling regions within them.
+To measure the CPU usage incurred when running the algorithm described in \S\ref{sec:exploiting} on SpiNNaker we developed a simple tool to profile SpiNNaker executables.
+In this section we use this profiling tool to analyse how the CPU usage of the ensembles in the communication channel network described in \S\ref{sef:background/constructing} vary with number of dimensions and neurons.
+\figurename~\ref{fig:results/comm-channel-cpu} shows how the proportion of CPU time spent in the different phases of the algorithm outlined in \S\ref{sec:exploiting} varies with both dimensionality and neuron count.
 
-In this section, we use this profiling tool to analyse how the CPU usage of the ensembles that make up the communication channel network described in \S\ref{sef:background/constructing} vary with the number of dimensions they are representing and the number of neurons they use to do so. 
-\figurename~\ref{fig:results/comm-channel-cpu} show how the CPU time spent in the different phases of the algorithm outlined in \S\ref{sec:exploiting} increases with the number of dimensions and neurons. 
-As a packet is sent and received every time-step for each dimension, the CPU time spent in both the \textit{input filtering} and \textit{output} phases is only dependant on the dimensionality $D$. On this basis, we fitted the following simple models of CPU time spent in these phases to the profiling data by performing a minimisation of the mean-squared error:
+The \textit{input filtering} and \textit{output} stages of the algorithm respectively transmit and receive one packet per simulation time-step for every dimension.
+Thus the CPU time spent in both phases is predominantly a function of the number dimensions, $D$.
+An indication of the number of cycles spent in these phases was determined by fitting the following simple models to the profiling data by performing a minimisation of the mean-squared error:
 %
-\begin{eqnarray}
-  t_{input} & = & 245 + 43 \cdot D \label{eq:profiling_input}\\
-  t_{output} & = & 100 + 702 \cdot D \label{eq:profiling_output}
-\end{eqnarray}
+\begin{align}
+  \mathrm{c}_\mathrm{input} & = 245 + 43 D \label{eq:profiling_input}\\
+  \mathrm{c}_\mathrm{output} & = 100 + 702 D \label{eq:profiling_output}
+\end{align}
 %
-As each neuron needs to apply its encoder vector to the filtered input and, if it spikes, add its decoder vector to the output buffer, the time spent in the \textit{neuron update} phase is dependant both on the dimensionality as well as the number of neurons $N$. To model this, we again fitted a simple, 1st order, 2-D model to the profiling data by performing a minimisation of the mean-squared error:
+During the \textit{neuron update} stage the dot product between the $D$-dimensional input vector and the $D$-dimensional encoder vector is computed for each of the $N$ neurons.
+Additionally, when a neuron spikes it is decoded by adding its $D$-dimensional decoding vector to the current output.
+Consequently the compute requirement of the \textit{neuron update} stage is a function of the both the dimensionality and the number of neurons.
+To model this we again fitted a simple, 1st order, 2-D model to the profiling data by performing a minimisation of the mean-squared error:
 %
 \begin{equation}
-  t_{neuron} = 188 + 69 \cdot N + 13 \cdot N \cdot D\label{eq:profiling_neuron}
+  \mathrm{c}_\mathrm{neuron} = 188 + 69 N + 13 N D\label{eq:profiling_neuron}
 \end{equation}
 %
-By adding these equations together, we can model the total CPU usage as follows:
+Adding these equations together we can model the total CPU usage as:
 %
 \begin{equation}
-  t = 533 + 745 \cdot D + 69 \cdot N + 13 \cdot N \cdot D\label{eq:profiling_total}
+  \mathrm{c}_\mathrm{total} = 533 + 745 D + 69 N + 13 N D\label{eq:profiling_total}
 \end{equation}
 %
-The 69 cycle cost of updating each neuron is a significant improvement over the 128 cycles quoted by \textcite{Sharp2013}. 
-The reason for this is likely to be due to the the Nengo neuron models use of normalised membrane voltages and having many parameters common to an entire population of neurons. 
-This means that fewer memory instructions are required to transfer each neurons state into the register file when compared to the general purpose SpiNNaker simulator. 
+The 69 cycle cost of updating each neuron is a significant improvement over the 128 cycles quoted by \textcite{Sharp2013} and is likely due to the NEF LIF model requiring fewer memory accesses than the model assessed by \citeauthor{Sharp2013}.
 
-In order to not overload the network interconnect, the simulator waits for \SI{1}{\micro\second} between sending packets in the \textit{output} phase, resulting in the high cost per-dimension shown in (\ref{eq:profiling_output}). 
-The remaining terms of (\ref{eq:profiling_total}) are then approximately synonymous with the synaptic processing stage of the general purpose SpiNNaker simulator analysed in \S\ref{sef:background/assessing}.
-Here the CPU benefits of the new simulation scheme become clear as, when we fit a similar model to the spike-based results shown in \figurename~\ref{fig:results/network-utilisation} we obtain the following equation:
+In the \textit{output phase} a \SI{1}{\micro\second} delay is inserted between transmitting packets in an attempt to avoid overloading the network interconnect.
+This is the primary cause for the high cost per dimension of this stage (\ref{eq:profiling_output}).
+The remaining terms of (\ref{eq:profiling_total}) are then analogous to the synaptic processing stage of the general purpose SpiNNaker simulator analysed in \S\ref{sef:background/assessing}.
+The CPU benefits of the proposed simulation scheme are evident when we a similar model is fitted to the spike-based results shown in \figurename~\ref{fig:results/network-utilisation}.
+In this case the computational cost (in cycles) is:
 %
 \begin{equation}
-  t = 3 \cdot N^{2}
+  \mathrm{c}_\mathrm{spike-based} = 3 N^{2}
 \end{equation}
 %
 Which, as $N \gg D$, grows much more rapidly than (\ref{eq:profiling_total}).
+
+%% More exposition here
 
   \begin{figure*}[!t]
     \centering
