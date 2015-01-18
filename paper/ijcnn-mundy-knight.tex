@@ -79,7 +79,7 @@ Specialised \textit{neuromorphic} hardware tries to avoid these constraints by p
 The SpiNNaker platform \parencite{Furber2014} is one of a range of neuromorphic simulators (including Neurogrid \parencite{Benjamin2014}, BrainScaleS \parencite{Schemmel2010} and lately TrueNorth \parencite{Merolla2014}) which should benefit investigators of embodied cognition and researchers of large neural models alike by enabling scalable, rapid simulation of large-scale neural networks.
 
 The Neural Engineering Framework (NEF) \parencite{Eliasmith2004} is a hypothesis about how neurons may act to encode the abstract mathematical constructs, such as scalars and vectors, that we often use in modelling the real world.
-Its successes so far include the Spaun model of cognition \parencite{Eliasmith2012} and a spiking neural network that encodes and decodes the main lexical relations in WordNet,\parencite{Crawford2013}.
+Its successes so far include the Spaun model of cognition \parencite{Eliasmith2012} and a spiking neural network that encodes and decodes the main lexical relations in WordNet \parencite{Crawford2013}.
 As with all neural systems, the NEF has proven costly to simulate: the Spaun model typically required \SI{2.5}{\hour} of compute time for \SI{1}{\second} of simulation \parencite[\S V]{Stewart2014}.
 Two aspects of NEF networks that make them particularly costly to simulate are the high firing rates of individual neurons (around \SIrange{200}{400}{\hertz} when saturated) and the dense synaptic matrices used to connect neuronal populations.
 The former presents a significant communication cost to any specialised neuromorphic hardware and the latter requires that large amounts of memory be used to represent the neural network with all the associated costs of transferring large blocks of data that implies.
@@ -181,6 +181,20 @@ For a connection between a pair of populations a (dense) synaptic weight matrix 
 
 With $i$ indexing neurons in the pre-synaptic population and $j$ those in the post-synaptic population.
 
+An illustrative model that we will use later in this paper is the \textit{communication channel}.
+  A communication channel consists of two populations connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble.
+  The concept is illustrated in \figurename~\ref{fig:background/comms-channel}.
+
+  \begin{figure}
+    \centering
+    \includestandalone[scale=0.75]{figures/comms_channel_map}
+    \caption{A NEF communication channel consisting of two populations of neurons and a connection.
+    The diagram indicates how the abstract communication channel might be instantiated on a simplified representation of the SpiNNaker architecture:
+    Population $A$ is split between processing two cores, consequently two streams of multicast packets allow simulation of the communication channel.
+    }
+    \label{fig:background/comms-channel}
+  \end{figure}
+  
   \subsection{Assessing the Neural Engineering Framework (NEF)}
   \label{sef:background/assessing}
 
@@ -194,7 +208,7 @@ The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasm
 
 For example, using the basic concepts (\semanticpointer{MOUSE}, \semanticpointer{CHEESE}, \semanticpointer{SUBJECT}, \semanticpointer{OBJECT}, \semanticpointer{EAT}, \semanticpointer{VERB}), a semantic pointer representing the sentence ``Mice eat cheese'' can be formed as $\msemanticpointer{S} = \msemanticpointer{MOUSE} \circledast \msemanticpointer{SUBJECT} + \msemanticpointer{EAT} \circledast \msemanticpointer{VERB} + \msemanticpointer{CHEESE} \circledast \msemanticpointer{OBJECT}$.
 The subject of this sentence could then be extracted using $\msemanticpointer{S} \circledast \msemanticpointer{SUBJECT}^{-1} \approx \msemanticpointer{MOUSE}$.
-However, this later process is relatively noisy -- to extract the $\msemanticpointer{MOUSE}$ semantic pointer the result needs to be ``cleaned up''.
+However, the resultant semantic pointer will not  be exactly \semanticpointer{MOUSE} -- to extract the $\msemanticpointer{MOUSE}$ semantic pointer the result needs to be ``cleaned up''.
 This process is performed using an auto-associative memory network \parencite{Stewart2011} the properties of which dictate that, in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
 
 On the basis of these two parameters (500 dimensions and 70 neurons per dimension) we can determine that functions on these vectors would have to be evaluated using populations of $3.5\times10^4$ neurons -- two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries.
@@ -203,6 +217,7 @@ As each core only has \SI{8}{\mebi\byte} of SDRAM each of these populations woul
 
 Representational errors can be reduced both by increasing the number of neurons and allowing these to fire at a higher rate \parencite{Eliasmith2004}. 
 NEF models such as Spaun typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}. 
+In the communication channel example shown in \figurename~\ref{fig:background/comms-channel}, this means that each neuron fires at an average of \SI{100}{\hertz} meaning that, using 70 neurons per dimensions, the spike rate 
 Consequently {\color{red} when using typical tuning curves, neurons fire at an average rate of approximately \SI{100}{\hertz}}. 
 \figurename~\ref{fig:results/network-utilisation} shows that, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes per time-step.
 Due to the dense connectivity matrices used by NEF each of these spikes would result in 280 synaptic events -- exceeding the constraint of 5000 synaptic events per time-step.
@@ -212,20 +227,6 @@ Due to the dense connectivity matrices used by NEF each of these spikes would re
     \includegraphics[scale=0.8]{figures/network-1}
     \caption{Spike rates for the pre-synaptic population of a communication channel.  The vertical line indicates the point at which \num{5000} synaptic events per core has been passed. Each population had 70 neurons per dimension.}
     \label{fig:results/network-utilisation}
-  \end{figure}
-
-  An illustrative model that we will use later in this paper is the \textit{communication channel}.
-  A communication channel consists of two populations connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble.
-  The concept is illustrated in \figurename~\ref{fig:background/comms-channel}.
-
-  \begin{figure}
-    \centering
-    \includestandalone[scale=0.75]{figures/comms_channel_map}
-    \caption{A NEF communication channel consisting of two populations of neurons and a connection.
-    The diagram indicates how the abstract communication channel might be instantiated on a simplified representation of the SpiNNaker architecture:
-    Population $A$ is split between processing two cores, consequently two streams of multicast packets allow simulation of the communication channel.
-    }
-    \label{fig:background/comms-channel}
   \end{figure}
 
   \section{Exploiting features of the NEF for effective simulation on SpiNNaker}
@@ -388,7 +389,7 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
 
   \begin{figure}[!t]
     \includegraphics{figures/spa_wall_clock}
-    \caption{}
+    \caption{The time spent in different stages of }
     \label{fig:results/spa-wall-clock}
   \end{figure}
   \section{Discussion}
@@ -404,7 +405,8 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
   \subsection{Comparison to other neuromorphic simulators}
 
   SpiNNaker is but one of a range of neuromorphic simulators, a family including both analogue (e.g., Neurogrid \parencite{Benjamin2014}, BrainScaleS \parencite{Schemmel2010}) and digital (e.g., TrueNorth \parencite{Merolla2014}) hardware, which aim to reduce the power consumption and execution time for simulating large neural models.
-  Of these, the analogue simulators can be expected to require less power than SpiNNaker for a given scale of model \parencite{Stromatias2013} and to be able simulate faster than biological real-time; however, they are limited to simulating neurons and synapses of the type cast in silicon whereas SpiNNaker may be reprogrammed as required to investigate new models and learning rules.
+  These simulators can be expected to require less power than SpiNNaker for a given scale of model \parencite{Stromatias2013}, but are limited to simulating the types of neurons and synapses they were fabricated with, whereas SpiNNaker can be reprogrammed to investigate new models.
+  In the context of running NEF models of the type discussed in this paper, there is another key limiation of these systems -- the number of hardware synapses associated with each neuron. In the case of TrueNorth, this number is only \num{256} and, for the BrainScaleS architecture, it is \num{16000}, restricting the size of the populations that can be connected by dense connectivity matrices to only 16 and 126 respectively.
 
   \subsection{Comparison to general purpose computer simulators}
 
