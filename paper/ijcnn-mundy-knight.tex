@@ -137,7 +137,7 @@ Processor constraints are present for those with access to only small SpiNNaker 
 At some point it is necessary to ensure that efficient use is made of the machine with regard to both time and processor usage.
 
 It should be noted that time is also a factor \textit{prior} to the start of any simulation.
-All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet. This means that if more data is required on the machine, more time is required to prepare it for simulation.
+All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, meaning that if more data is required on the machine, more time is required to prepare it for simulation.
 \textcite{Sharp2013} note that this preperation time can be in the order of several minutes which is undesirable if a real-time simulator is desired.
 Reducing the memory usage is important to ensure both that efficient use is made of processing cores but also that the time required to load data to a SpiNNaker machine is reasonable.
 
@@ -207,7 +207,7 @@ These concepts can then be combined into symbol structures using addition~($+$) 
 The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasmith2013build} demonstrates, require around 70 neurons per-dimension to calculate accurately.
 
 For example, using the basic concepts (\semanticpointer{MOUSE}, \semanticpointer{CHEESE}, \semanticpointer{SUBJECT}, \semanticpointer{OBJECT}, \semanticpointer{EAT}, \semanticpointer{VERB}), a semantic pointer representing the sentence ``Mice eat cheese'' can be formed as $\msemanticpointer{S} = \msemanticpointer{MOUSE} \circledast \msemanticpointer{SUBJECT} + \msemanticpointer{EAT} \circledast \msemanticpointer{VERB} + \msemanticpointer{CHEESE} \circledast \msemanticpointer{OBJECT}$.
-The subject of this sentence could then be extracted using $\msemanticpointer{S} \circledast \msemanticpointer{SUBJECT}^{-1} \approx \msemanticpointer{MOUSE}$.
+The subject of this sentence could then be extracted using $\msemanticpointer{S} \circledast \msemanticpointer{SUBJECT}^\prime \approx \msemanticpointer{MOUSE}$ (where the ${}^\prime$ operator is an approximate inverse \parencite[\S D.2]{eliasmith2013build}, calculated by a linear involution operation).
 However, the resultant semantic pointer will not  be exactly \semanticpointer{MOUSE} -- to extract the $\msemanticpointer{MOUSE}$ semantic pointer the result needs to be ``cleaned up''.
 This process is performed using an auto-associative memory network \parencite{Stewart2011} the properties of which dictate that, in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
 
@@ -215,12 +215,11 @@ On the basis of these two parameters (500 dimensions and 70 neurons per dimensio
 Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, hence the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}.
 As each core only has \SI{8}{\mebi\byte} of SDRAM each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
 
-Representational errors can be reduced both by increasing the number of neurons and allowing these to fire at a higher rate \parencite{Eliasmith2004}. 
-NEF models such as Spaun typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}. 
-In the communication channel example shown in \figurename~\ref{fig:background/comms-channel}, this means that each neuron fires at an average of \SI{100}{\hertz} meaning that, using 70 neurons per dimensions, the spike rate 
-Consequently {\color{red} when using typical tuning curves, neurons fire at an average rate of approximately \SI{100}{\hertz}}. 
-\figurename~\ref{fig:results/network-utilisation} shows that, if 70 neurons are used per-dimension, a 4-D ensemble will receive around 20 incoming spikes per time-step.
-Due to the dense connectivity matrices used by NEF each of these spikes would result in 280 synaptic events -- exceeding the constraint of 5000 synaptic events per time-step.
+Representational errors can be reduced both by increasing the number of neurons and allowing these to fire at a higher rate \parencite{Eliasmith2004}.
+NEF models typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S~\ref{sef:background/nef}, each neuron fires at an average of around \SI{100}{\hertz}.
+If this example is simulated with 70 neurons per dimension, the overall spike rate increases logarithmically with dimensionality as shown in \figurename~\ref{fig:results/network-utilisation}.
+This shows that if we consider the 4 dimensional case, the post-synaptic ensemble will receive around 20 incoming spikes per time-step.
+Due to the dense connectivity matrices, each of these spikes will then cause a synaptic event for each of the ensembles 280 neurons, resulting in 5600 synaptic events per timestep -- exceeding the limit of 5000 events per timestep found by \textcite{Sharp2013}.
 
   \begin{figure}[!t]
     \centering
