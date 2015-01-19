@@ -310,7 +310,7 @@ Adding these equations together we can model the total CPU cycle count as:
 \end{equation}
 %
 Which, in the one dimensional case matches our experimental findings that our new simulator can simulate over 2000 neurons -- double the SpiNNaker system's architectural target of 1000 \parencite{}. 
-By substituting $D=1$ into (\ref{eq:profiling_total}), we can see that the maximum number of neurons that could be supported in the 1-D case is 2423 - Reflecting the maximum of 2000 that. 
+By substituting $D=1$ into (\ref{eq:profiling_total}), we can see that the maximum number of neurons that could be supported in the 1-D case is 2423.
 In order to compare this model with the spike-based communication model discussed in \S\ref{sef:background/assessing}, we can further simplify (\ref{eq:profiling_total}) by substituting $D=\frac{N}{70}$ to reflect Eliasmith's \parencite{eliasmith2013build} analysis:
 %
 \begin{equation}
@@ -324,7 +324,7 @@ Finally, using the CPU cycle estimates for updating neuronal state and processin
 \end{equation}
 % 
 These models show that our implementation requires significantly fewer CPU cycles per neuron than the general purpose SpiNNaker simulator, allowing it to simulate up to 834 neurons per core in this configuration. 
-This is more than $3.5 \times$ more than the 236 per core that the general purpose SpiNNaker simulator can achieve.
+This is more than $3.5 \times$ the 236 neurons per core that the general purpose SpiNNaker simulator can achieve in the same configuration.
 
 %% More exposition here
 
@@ -345,10 +345,10 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
 
   The dense connection weight matrix for any connection between populations of $N_\mathrm{pre}$ and $N_\mathrm{post}$ neurons in the NEF will be of size $N_\mathrm{pre} \times N_\mathrm{post}$ and, under the spike based algorithm, would be stored entirely in the memory of the post-synaptic core.
   When factored weight matrices are substituted for the full weight matrix, as described in \S\ref{sec:exploiting}, the memory usage is split between the pre- and post-synaptic cores.
-  The post-synaptic core needs to store a single encoder matrix of size $D_\mathrm{post} N_\mathrm{post}$ while the pre-synaptic core will store a decoder matrix of size $D_\mathrm{pre} N_\mathrm{pre}$, where $D_\mathrm{population}$ is the dimensionality of the population.
+  The post-synaptic core needs to store a single encoder matrix of size $D_\mathrm{post} \times N_\mathrm{post}$ while the pre-synaptic core will store a decoder matrix of size $D_\mathrm{pre} \times N_\mathrm{pre}$, where $D_\mathrm{population}$ is the dimensionality of the population.
 
   For example, a 16-D communication channel constructed from two \num{1120}-neuron populations will require \num{1254400} values to be stored in the memory of the post-synaptic core to represent the full weight matrix.
-  If factored weight matrices are used then both the pre-synaptic core must store \num{17920} values, though the post-synaptic core will not need to store any more data for any further incoming connections.
+  If factored weight matrices are used then both the pre- and post-synaptic cores must store \num{17920} values, although the post-synaptic core will not need to store any more data for any further incoming connections.
   Using, as is common, \SI{16}{\bit} to store each synaptic value and \SI{32}{\bit} to store each encoder/decoder value this becomes \SI{2.4}{\mebi\byte} to store the full weight matrix or \SI{70.0}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.0}{\kibi\byte}).
   Factored weight matrices achieve a saving~of~\SI{94.3}{\percent}.
 
@@ -430,7 +430,7 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
   \section{Conclusion}
 
   This paper has shown how several properties of the NEF lead to inefficient use of the SpiNNaker computing architecture.
-  We have described and assessed an alternative approach to simulating models built using the NEF on SpiNNaker that enable it to exceed the design target of 1000 neurons per core without exceeding the network capacity or becoming memory bound.
+  We have described and assessed an alternative approach to simulating models built using the NEF on SpiNNaker that enable it to exceed the design target of 1000 neurons per core and result in memory savings of the order of \SI{90}{\percent}.
   Our intent is to use this new implementation of the NEF for SpiNNaker to simulate the full Spaun-model in biological real-time, and to investigate models of greater scale and complexity.
 
   \section*{Acknowledgements}
