@@ -6,16 +6,17 @@ import seaborn as sns
 
 # Times from reference simulator
 reference = [
-    ("build", [ 3.38, 6.8 ]),
-    ("simulate", [ 65.3, 128.8 ])
+    ("build", [ 3.82, 6.66 ]),
+    ("simulate", [ 70, 133.69 ])
 ]
 
 # Times from nengo spinnaker
+# **NOTE** 5s is boot time
 spinnaker = [
-    ("build", [ 2.0 + (9.6 - 5.0), 4.7 + (15.3 - 5.0)]),
-    ("load", [ 3.7, 10.1 ]),
-    ("simulate", [ 14.5, 16.6 ]),
-    ("download", [ 3.15, 5.3 ])
+    ("build", [ 2.53 + (10.54 - 5.0), 4.39 + (14.70 - 5.0)]),
+    ("load", [ 3.94, 4.37 ]),
+    ("simulate", [ 14.40, 16.42 ]),
+    ("download", [ 1.54, 3.12 ])
 ]
 
 # Create single-axis figure
@@ -71,8 +72,8 @@ ticks = numpy.sort(ticks + (bar_width / 2.0))
 axis.set_xticks(ticks)
 axis.set_xticklabels(["Nengo", "SpiNNaker", "Nengo", "SpiNNaker"], size="xx-small")
 
-axis.text(bar_x[0] + bar_width, -35.0, "16 dimensions\n8 actions", horizontalalignment="center", size="small")
-axis.text(bar_x[1] + bar_width, -35.0, "32 dimensions\n16 actions", horizontalalignment="center", size="small")
+axis.text(bar_x[0] + bar_width, -27.0, "8 actions", horizontalalignment="center", size="small")
+axis.text(bar_x[1] + bar_width, -27.0, "16 actions", horizontalalignment="center", size="small")
 
 handles, labels = axis.get_legend_handles_labels()
 axis.legend(handles[::-1], labels[::-1], loc="upper left")
