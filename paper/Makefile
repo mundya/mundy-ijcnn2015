@@ -15,18 +15,21 @@ texdoc=ijcnn-mundy-knight
 .PHONY: count
 
 # Make all items
-all : $(texdoc).tex
+all : $(texdoc).pdf
+	$(TEX) $(TEXFLAGS) $(texdoc)
+
+$(texdoc).pdf : $(texdoc.tex)
 	$(TEX) $(TEXFLAGS) $(texdoc)
 
 # Complete (rather than quick build)
 complete : clean bib count all
 
 # Generate reference requirements
-$(texdoc).aux :
+$(texdoc).aux : $(texdoc).tex
 	$(TEX) $(TEXFLAGS) $(texdoc)
 
 # Generate the bibliography
-bib : all
+bib : $(texdoc).aux
 	$(BIB) $(BIBFLAGS) $(texdoc)
 	$(TEX) $(TEXFLAGS) $(texdoc)
 	$(TEX) $(TEXFLAGS) $(texdoc)

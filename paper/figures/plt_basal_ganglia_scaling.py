@@ -27,7 +27,7 @@ if __name__ == '__main__':
             f.write("""
 \\begin{tabular}{r %s}
   \\toprule
-    Dimensionality & %s \\\\
+    Inputs & %s \\\\
   \\midrule\n""" % (
                         ' '.join(['S'] * len(dims)),
                         ' & '.join(['{' + str(n) + '}' for n in dims])

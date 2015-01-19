@@ -10,6 +10,9 @@ from nengo.utils.builder import (remove_passthrough_nodes,
                                  objs_and_connections, full_transform)
 import numpy as np
 
+BYTES_PER_SYNAPSE = 2.  # 16-bits per synapse
+BYTES_PER_ENC_DECODER = 4.  # 32-bits per enc/decoder
+
 
 def get_weight_matrices_requirements(network):
     # The weight matrix requirements for a core are the N_a x N_b_c matrix for
@@ -26,7 +29,7 @@ def get_weight_matrices_requirements(network):
         pre_neurons = sum(s.n_neurons for s in sources)
         mem_usage += pre_neurons * ens.n_neurons
 
-    return mem_usage * 4. # (4 bytes per value)
+    return mem_usage * BYTES_PER_SYNAPSE
 
 
 def get_factored_weight_matrices_requirements(network):
@@ -50,4 +53,4 @@ def get_factored_weight_matrices_requirements(network):
         # Incoming cost is just n_neurons x d
         mem_usage += ens.n_neurons * ens.dimensions
 
-    return mem_usage * 4. # (4 bytes per value)
+    return mem_usage * BYTES_PER_ENC_DECODER  # (4 bytes per value)
