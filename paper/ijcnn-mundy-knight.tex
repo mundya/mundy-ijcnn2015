@@ -200,26 +200,27 @@ An illustrative model that we will use later in this paper is the \textit{commun
 
 It is entirely possible to translate models built using NEF principles into populations of point neurons connected with dense synaptic weight matrices.
 These networks could then, in theory, be simulated using the standard SpiNNaker spiking neural network simulator described in \S\ref{sef:background/nn}.
-In this section we show that, based on parameters used in the Spaun functional brain model, this approach would be sub-optimal given the constraints of the SpiNNaker platform outlined in \S\ref{sef:background/nn}.
+In this section we show that, based on parameters used in the Spaun functional brain model, this approach would result in sub-optimal usage of a SpiNNaker machine, given the constraints outlined in \S\ref{sef:background/nn}.
 
 The Spaun model is built using the Semantic Pointer Architecture (SPA) \parencite{eliasmith2013build} which uses randomly chosen NEF unit vectors to represent basic concepts.
-These concepts can then be combined into symbol structures using addition~($+$) and circular convolution~($\circledast$) operators, both functions being performed which are evaluated using the NEF.
-The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasmith2013build} demonstrates, require around 70 neurons per-dimension to calculate accurately.
+These concepts can then be combined into symbol structures using addition~($+$) and circular convolution~($\circledast$) operators, both of which can be evaluated using the principles of the NEF.
+The circular-convolution operator is non-linear and, Eliasmith \parencite{eliasmith2013build} demonstrates, require around 70 neurons per dimension to calculate accurately.
 
 For example, using the basic concepts (\semanticpointer{MOUSE}, \semanticpointer{CHEESE}, \semanticpointer{SUBJECT}, \semanticpointer{OBJECT}, \semanticpointer{EAT}, \semanticpointer{VERB}), a semantic pointer representing the sentence ``Mice eat cheese'' can be formed as $\msemanticpointer{S} = \msemanticpointer{MOUSE} \circledast \msemanticpointer{SUBJECT} + \msemanticpointer{EAT} \circledast \msemanticpointer{VERB} + \msemanticpointer{CHEESE} \circledast \msemanticpointer{OBJECT}$.
 The subject of this sentence could then be extracted using $\msemanticpointer{S} \circledast \msemanticpointer{SUBJECT}^\prime \approx \msemanticpointer{MOUSE}$ (where the ${}^\prime$ operator is an approximate inverse \parencite[\S D.2]{eliasmith2013build}, calculated by a linear involution operation).
-However, the resultant semantic pointer will not  be exactly \semanticpointer{MOUSE} -- to extract the $\msemanticpointer{MOUSE}$ semantic pointer the result needs to be ``cleaned up''.
-This process is performed using an auto-associative memory network \parencite{Stewart2011} the properties of which dictate that, in order to reliably extract a human-scale lexicon from a semantic pointer, it requires around 500 dimensions.
+However, the result of this operation will not  be exactly \semanticpointer{MOUSE} -- to extract the $\msemanticpointer{MOUSE}$ semantic pointer the result needs to be ``cleaned up''.
+This process is performed using an auto-associative memory network \parencite{Stewart2011} the properties of which dictate that, in order to reliably represent a human-scale lexicon, semantic pointers must be drawn from a vector space with around 500 dimensions.
 
-On the basis of these two parameters (500 dimensions and 70 neurons per dimension) we can determine that functions on these vectors would have to be evaluated using populations of $3.5\times10^4$ neurons -- two of which would be connected using a dense synaptic matrix with $1.225\times10^9$ entries.
-Synapses on SpiNNaker are typically represented as \SI{32}{\bit} values, hence the synaptic matrix would be approximately \SI{4.5}{\gibi\byte}.
-As each core only has \SI{8}{\mebi\byte} of SDRAM each of these populations would have to be distributed between 585 cores, reducing the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
+On the basis of these two parameters (500 dimensions and 70 neurons per dimension) we can determine that semantic pointers with this dimensionality would need to be represented using populations of $3.5\times10^4$ neurons.
+A connection between two of these populations would then require a dense synaptic matrix with $1.225\times10^9$ entries.
+Synaptic weights on SpiNNaker are typically represented as \SI{16}{\bit} values, hence the full matrix would be approximately \SI{2.25}{\gibi\byte}.
+As each core only has \SI{8}{\mebi\byte} of SDRAM, the population at the post-synaptic side of this connection would have to be distributed amongst 585 cores.
+This would reduce the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
 
-Representational errors can be reduced both by increasing the number of neurons and allowing these to fire at a higher rate \parencite{Eliasmith2004}.
-NEF models typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S~\ref{sef:background/nef}, each neuron fires at an average of around \SI{100}{\hertz}.
-If this example is simulated with 70 neurons per dimension, the overall spike rate increases logarithmically with dimensionality as shown in \figurename~\ref{fig:results/network-utilisation}.
-This shows that if we consider the 4 dimensional case, the post-synaptic ensemble will receive around 20 incoming spikes per time-step.
-Due to the dense connectivity matrices, each of these spikes will then cause a synaptic event for each of the ensembles 280 neurons, resulting in 5600 synaptic events per timestep -- exceeding the limit of 5000 events per timestep found by \textcite{Sharp2013}.
+Both increasing the number of neurons and allowing them to fire at a higher rate act to reduce representational errors \parencite{Eliasmith2004}.
+Models built using the NEF typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S~\ref{sef:background/nef}, each neuron fires at an average rate of around \SI{100}{\hertz}.
+If this example were simulated with 70 neurons per dimension, the overall spike rate would increase logarithmically with dimensionality as shown in \figurename~\ref{fig:results/network-utilisation}.
+Considering the 4 dimensional case, the post-synaptic ensemble will receive around 20 incoming spikes per time-step which, due to the dense connectivity matrices, will trigger a synaptic event for each of the 280 neurons in the ensemble, resulting in 5600 synaptic events per time-step -- exceeding the limit of 5000 events per time-step found by \textcite{Sharp2013}.
 
   \begin{figure}[!t]
     \centering
@@ -322,7 +323,7 @@ Finally, using the CPU cycle estimates for updating neuronal state and processin
   \mathrm{c}_\mathrm{spike-based-total} = 128N + 3 N^{2}\label{eq:profiling_spike_based_total}
 \end{equation}
 % 
-These models show that our implementation requires significantly fewer CPU cycles per neuron than the general purpose SpiNNaker simulator, allowing it to simulate up to 834 neurons per-core in this configuration. 
+These models show that our implementation requires significantly fewer CPU cycles per neuron than the general purpose SpiNNaker simulator, allowing it to simulate up to 834 neurons per core in this configuration. 
 This is more than $3.5 \times$ more than the 236 per core that the general purpose SpiNNaker simulator can achieve.
 
 %% More exposition here
@@ -333,7 +334,7 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
       \includegraphics[width=2.5in]{figures/comm_channel_cpu_16d_bar}
     }
     \hfil
-    \subfloat[100 neurons per-population]{
+    \subfloat[100 neurons per population]{
       \includegraphics[width=2.5in]{figures/comm_channel_cpu_100n_bar}
     }
     \caption{Average percentange of 1ms simulation time step spent in different phases of our simulation algorithm when simulating communication channels of varying dimensionality using different numbers of neurons.}
