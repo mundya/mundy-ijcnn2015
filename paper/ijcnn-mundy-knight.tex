@@ -217,7 +217,7 @@ Synaptic weights on SpiNNaker are typically represented as \SI{16}{\bit} values,
 As each core only has \SI{8}{\mebi\byte} of SDRAM, the population at the post-synaptic side of this connection would have to be distributed amongst 585 cores.
 This would reduce the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
 
-Both increasing the number of neurons and allowing them to fire at a higher rate act to reduce representational errors \parencite{Eliasmith2004}.
+Representational errors can be reduced both by increasing the number of neurons and by allowing them to fire at a higher rate \parencite{Eliasmith2004}.
 Models built using the NEF typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S~\ref{sef:background/nef}, each neuron fires at an average rate of around \SI{100}{\hertz}.
 If this example were simulated with 70 neurons per dimension, the overall spike rate would increase logarithmically with dimensionality as shown in \figurename~\ref{fig:results/network-utilisation}.
 Considering the 4 dimensional case, the post-synaptic ensemble will receive around 20 incoming spikes per time-step which, due to the dense connectivity matrices, will trigger a synaptic event for each of the 280 neurons in the ensemble, resulting in 5600 synaptic events per time-step -- exceeding the limit of 5000 events per time-step found by \textcite{Sharp2013}.
