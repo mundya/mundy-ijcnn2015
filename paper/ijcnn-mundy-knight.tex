@@ -349,8 +349,8 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
 
   For example, a 16-D communication channel constructed from two \num{1120}-neuron populations will require \num{1254400} values to be stored in the memory of the post-synaptic core to represent the full weight matrix.
   If factored weight matrices are used then both the pre-synaptic core must store \num{17920} values, though the post-synaptic core will not need to store any more data for any further incoming connections.
-  Using, as is common, \SI{32}{\bit} to store each value this becomes \SI{4.79}{\mebi\byte} to store the full weight matrix or \SI{70.00}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.00}{\kibi\byte}).
-  Factored weight matrices achieve a saving~of~\SI{97.14}{\percent}.
+  Using, as is common, \SI{16}{\bit} to store each synaptic value and \SI{32}{\bit} to store each encoder/decoder value this becomes \SI{2.4}{\mebi\byte} to store the full weight matrix or \SI{70.0}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.0}{\kibi\byte}).
+  Factored weight matrices achieve a saving~of~\SI{94.3}{\percent}.
 
   \begin{table}
     \centering
@@ -359,11 +359,11 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
     \input{figures/bgscale_70}
     \vskip\baselineskip
 
-    \raggedright Memory usage of the synaptic weights (full matrix and factored) for the standard Basal Ganglia implementation from Nengo (70 neurons per dimension).
+    \raggedright Memory usage of the synaptic weights (full matrix and factored) for the standard Basal Ganglia implementation from Nengo (70 neurons per input).
   \end{table}
 
   Table~\ref{tab:results/memory-bg70} shows the memory usage from the connections within the basal ganglia model used in Spaun.
-  The reduction in memory usage that results from using factored weight matrices is significant -- indeed, it should be noted that for a basal ganglia accepting \num{128} inputs representing the connection weights would require the SDRAM of nearly five SpiNNaker chips if full weight matrices were used.
+  The reduction in memory usage that results from using factored weight matrices is significant -- indeed, it should be noted that for a basal ganglia accepting \num{128} inputs representing the connection weights would require the SDRAM of three SpiNNaker chips if full weight matrices were used.
 
   \subsection{Simulating large-scale models}
   \label{sec:spa-sequence}
