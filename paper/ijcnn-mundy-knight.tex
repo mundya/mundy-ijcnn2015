@@ -368,13 +368,9 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
   \subsection{Simulating large-scale models}
   \label{sec:spa-sequence}
 
-  To illustrate the correctness of our technique, and to provide a comparison between SpiNNaker and the reference NEF implementation (Nengo \parencite{Bekolay2014}), we simulated a larger model which contains several components of Spaun.
-  This benchmark is based on a model of action selection developed by \textcite{Stewart2010}.
-  A population of neurons is used to represent a state.
-  This population is connected to a model of the basal ganglia which acts to determine the next state.
-  Once the next state has been determined a model of the thalamus changes the input of the state-population to effect the change to this next state.
-  If the components of the model are connected recurrently the state machine can continue indefinitely.
-  A sample of the current state of the model is shown in \figurename~\ref{fig:results/sequence}.
+  To illustrate the correctness of our technique and to provide a comparison between SpiNNaker and the reference NEF implementation (Nengo \parencite{Bekolay2014}), we simulated a larger model based on the basal ganglia model used in Spaun \parencite{Stewart2010}.
+
+  For the purposes of our benchmark, we assigned a 16-D semantic pointer to each basal ganglia input and generated utility values over time by comparing these to a repeating sequence of semantic pointers. A sample of the basal ganglia input and output are shown in \figurename~\ref{fig:results/basal_ganglia}.
 
   We simulated this model for \SI{10}{\second} using a SpiNNaker machine and the standard NEF implementation on a standard desktop PC (\SI{3}{\giga\hertz} AMD Athlon II X3 445).
   \figurename~\ref{fig:results/spa-wall-clock} shows the time required to perform certain stages of preparing, uploading data to the SpiNNaker machine, executing the model and retrieving data for two scales of model.
@@ -382,14 +378,14 @@ This is more than $3.5 \times$ more than the 236 per core that the general purpo
   It is likely that as the scale and complexity of models increase the overheads will follow, but this should be less than the expected growth in simulation time on the PC.
 
   \begin{figure}[!t]
-    \includegraphics{figures/sequence}
-    \caption{Comparing the output of the action selection against a list of 4 semantic pointers, labelled $A$, $B$, $C$ and $D$ - showing sequence behaviour.}
-    \label{fig:results/sequence}
+    \includegraphics{figures/basal_ganglia}
+    \caption{SpiNNaker simulation of the Basal Ganglia model, selecting between 4 inputs labelled $A$, $B$, $C$ and $D$, presented to it in sequence.}
+    \label{fig:results/basal_ganglia}
   \end{figure}
 
   \begin{figure}[!t]
     \includegraphics{figures/spa_wall_clock}
-    \caption{The time spent in different stages of }
+    \caption{The time spent in different stages of both the SpiNNaker and the Nengo reference simulators when running the basal ganglia benchmark. }
     \label{fig:results/spa-wall-clock}
   \end{figure}
   \section{Discussion}
