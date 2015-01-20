@@ -64,11 +64,11 @@
   \maketitle
 
   \begin{abstract}
-The Neural Engineering Framework (NEF) is an hypothesis about how complex neural systems may be constructed and has recently been used to build the world's first functional brain model, Spaun.
-While the NEF simplifies the design of neural networks, simulation using standard computer hardware is still computationally expensive -- often running far slower than biological real-time and scaling very poorly: problems the SpiNNaker neuromorphic simulator was designed to solve.
+By building and simulating neural systems, we hope to understand how the brain may work and use this knowledge to build neural and cognitive systems to tackle engineering problems.
+The Neural Engineering Framework (NEF) is a hypothesis about how such systems may be constructed and has recently been used to build the world's first functional brain model, Spaun.
+However, while the NEF simplifies the design of neural networks, simulating them using standard computer hardware is still computationally expensive -- often running far slower than biological real-time and scaling very poorly: problems the SpiNNaker neuromorphic simulator was designed to solve.
 In this paper we (1) argue that employing the same model of computation used for simulating general purpose spiking neural networks on SpiNNaker for NEF models results in sub-optimal use of the architecture, and (2) provide and evaluate an alternative simulation scheme which overcomes the memory and compute challenges posed by the NEF.
-This proposed method uses factored weight matrices rather than the full weight matrix to reduce memory usage.
-Memory usage reductions of the order of~90\% are possible and in some cases it is possible to simulate 2000 neurons on a processing core, double the SpiNNaker architectural target.
+This proposed method uses factored weight matrices to reduce memory usage by around 90\% and, in some cases simulate 2000 neurons on a processing core, double the SpiNNaker architectural target.
   \end{abstract}
 
   \section{Introduction}
@@ -426,7 +426,7 @@ To avoid this \citeauthor*{Galluppi2012}\ suggested transmitting factored weight
 
   \section{Conclusion}
 
-  Some characteristics of neural networks built using the NEF, dense synaptic weight matrices and high firing rates, lead to inefficient use of the SpiNNaker architecture.
+  The dense synaptic weight matrices and high firing rates characteristic of neural networks built using the NEF, lead to inefficient use of the SpiNNaker architecture.
   In particular we identified that storing the synaptic matrices for these networks would require large amounts of memory and that the high firing rates and dense neural connectivity would exceed the computational resources available to a SpiNNaker core simulating a model in biological real-time.
   To overcome these constraints we proposed a simulation scheme which used factored weight matrices.
   This proposed scheme requires around 90\% less memory in many cases and is able to simulate many more neurons per core than would otherwise be possible -- in some cases we are able to simulate 2000 neurons per core, double the SpiNNaker architectural target.
