@@ -123,12 +123,11 @@ There are two primary constraints on the number of neurons that may be simulated
 
   \begin{enumerate}
     \item The amount of memory required to store the synaptic weight matrices must fit within the space available to the core.
+      This is \SI{8}{\mebi\byte} as each core is allocated $\frac{1}{16}$ of the \SI{128}{\mebi\byte} SDRAM.
     \item As the majority of processing time is spent in the synaptic processing pipeline, there must be sufficient time for the core to process all incoming `spike' packets; and retrieve and process the synaptic rows during one simulation time-step (see \parencite{Sharp2013}).
+This time is a function of both the number of spikes received per time-step and the density of the synaptic matrix.
+\textcite[\S III.C]{Sharp2013} indicate that at most there may be \num{5000} synaptic events per millisecond when running at biological real-time, where a single synaptic event indicates one spike being passed through a single synapse to a neuron on the receiving core.
   \end{enumerate}
-
-Each core is allocated $\frac{1}{16}$ of the \SI{128}{\mebi\byte} SDRAM and hence the synaptic matrices must fit within \SI{8}{\mebi\byte} of memory -- this forms the first constraint.
-The second constraint is related to both the number of spikes received per time-step and the density of the synaptic matrix: \textcite[\S III.C]{Sharp2013} indicate that at most there may be \num{5000} synaptic events per millisecond when running at biological real-time.
-A single synaptic event indicates one spike being passed through a single synapse to a neuron on the receiving core.
 
 These constraints may be met by either allocating fewer neurons to each processing core or by increasing the processing time used for each simulation time-step.
 In practice there are limits to the number of processors and the amount of time that are available (though one aim of the SpiNNaker project is to build a machine consisting of one million cores).
