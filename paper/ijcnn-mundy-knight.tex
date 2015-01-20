@@ -76,7 +76,7 @@ Memory usage reductions of the order of~90\% are possible and in some cases it i
 For a given power budget, two factors limit the simulation of neural networks on any computing platform: scale and time. Theoretically, any scale of network may be simulated but as scale increases simulation time follows.
 Conversely, if the simulation time is limited (for example, if biological real-time is necessary) then only a limited scale of network may be simulated.
 Specialised \textit{neuromorphic} hardware tries to avoid these constraints by parallelising and distributing computational effort and relying on dense interconnection of the computing elements.
-The SpiNNaker platform \parencite{Furber2014} is one of a range of neuromorphic simulators (including Neurogrid \parencite{Benjamin2014}, BrainScaleS \parencite{Schemmel2010} and lately TrueNorth \parencite{Merolla2014}) which should benefit investigators of embodied cognition and researchers of large neural models alike by enabling scalable, rapid simulation of large-scale neural networks.
+The SpiNNaker platform \parencite{Furber2014} is one of a range of neuromorphic simulators (including Neurogrid \parencite{Benjamin2014}, BrainScaleS \parencite{Schemmel2010} and TrueNorth \parencite{Merolla2014}) which should benefit researchers of large-scale neural models.
 
 The Neural Engineering Framework (NEF) \parencite{Eliasmith2004} is a hypothesis about how neurons may be used to encode abstract mathematical constructs,such as scalars and vectors, that we often used to model the real world.
 Its successes so far include the Spaun model of cognition \parencite{Eliasmith2012} and a spiking neural network that encodes and decodes the main lexical relations in WordNet \parencite{Crawford2013}.
@@ -90,7 +90,7 @@ The former presents a significant communication cost to any specialised neuromor
     \item Detail a method by which features of the NEF may be used to reduce the memory and compute costs associated with its simulation.
   \end{enumerate}
 
-We hope to use the result to run the full Spaun model in biological real-time -- a \num{9000} times speedup.
+We hope to use the result to run the full Spaun model in biological real-time.
 
   \section{Background}
 
@@ -217,7 +217,7 @@ Representational errors can be reduced both by increasing the number of neurons 
 However, models built using the NEF typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S~\ref{sec:background/nef}, each neuron fires at an average rate of around \SI{100}{\hertz}.
 If this example were simulated with 70 neurons per dimension, the overall spike rate would increase linearly with dimensionality as shown in \figurename~\ref{fig:results/network-utilisation}.
 In the 4 dimensional case, this means that the post-synaptic ensemble will receive around 20 incoming spikes per time-step which, due to the dense connectivity matrices, will trigger a synaptic event for each of the 280 neurons in the ensemble. 
-This results in a total of around 5600 synaptic events per time-step -- exceeding the limit of 5000 events per time-step found by \textcite{Sharp2013}.
+This results in a total of around 5600 synaptic events per time-step -- exceeding the limit of 5000 events per time-step found by Sharp and Furber~\parencite{Sharp2013}.
 
   \begin{figure}[!t]
     \centering
@@ -345,7 +345,7 @@ This is more than $3.5 \times$ the 236 neurons per core that the general purpose
 
   For example, a 16-D communication channel constructed from two \num{1120}-neuron populations will require \num{1254400} values to be stored in the memory of the post-synaptic core to represent the full weight matrix.
   If factored weight matrices are used then both the pre- and post-synaptic cores must store \num{17920} values, although the post-synaptic core will not need to store any more data for any further incoming connections.
-  Using, as is common, \SI{16}{\bit} to store each synaptic value and \SI{32}{\bit} to store each encoder/decoder value this becomes \SI{2.4}{\mebi\byte} to store the full weight matrix or \SI{70.0}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.0}{\kibi\byte}).
+  sing \SI{16}{\bit} to store each synaptic value and, as in our implementation, \SI{32}{\bit} to store each encoder/decoder value this becomes \SI{2.4}{\mebi\byte} to store the full weight matrix or \SI{70.0}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.0}{\kibi\byte}).
   Factored weight matrices achieve a saving~of~\SI{94.3}{\percent}.
 
   \begin{table}
