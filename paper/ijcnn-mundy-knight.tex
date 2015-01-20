@@ -112,7 +112,7 @@ On receipt of a packet a core executes a \textit{callback} function which may in
   \subsection{Simulating neural nets on SpiNNaker}
   \label{sef:background/nn}
 
-When simulating neural nets on a SpiNNaker machine each core is responsible for simulating a number (in the order of a few hundred) of point neurons.
+When simulating neural nets on a SpiNNaker machine each core is responsible for simulating a number of point neurons (in the order of a few hundred).
 When one of these neuron spikes it transmits a packet whose key uniquely identifies the neuron (for this it requires no payload).
 This ``spike'' packet is then routed across the network fabric to the processing cores responsible for simulating each of the neurons that are synaptically connected to the firing neuron.
 On receipt of a ``spike'' packet a core retrieves the row of the connectivity matrix associated with the firing neuron from SDRAM.
