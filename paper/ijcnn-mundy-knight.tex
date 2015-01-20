@@ -64,11 +64,11 @@
   \maketitle
 
   \begin{abstract}
-Building and simulating neural systems is a promising avenue in our search for understanding how the brain may work and for how neural and cognitive systems may be employed to tackle engineering problems.
-The Neural Engineering Framework (NEF) is an interesting hypothesis about how such systems may be constructed and has recently been used to build the world's first functional brain model, Spaun.
+The Neural Engineering Framework (NEF) is an hypothesis about how complex neural systems may be constructed and has recently been used to build the world's first functional brain model, Spaun.
 However, while the NEF simplifies the design of complex neural networks simulating these using standard computer hardware is still computationally expensive -- often running far slower than biological real-time and scaling very poorly: problems the SpiNNaker neuromorphic simulator was designed to solve.
-In this paper we (1) argue that employing the same model of computation used for simulating general purpose spiking neural networks on SpiNNaker for NEF models is sub-optimal, and (2) provide and evaluate an alternative simulation scheme which overcomes the memory and compute challenges posed by the NEF.
-The method we describe is capable of simulating up to \num{2000} neurons on a processing core and results in the order of a \SI{90}{\percent} reduction in memory used to store synaptic connection weights.
+In this paper we (1) argue that employing the same model of computation used for simulating general purpose spiking neural networks on SpiNNaker for NEF models results in sub-optimal use of the architecture, and (2) provide and evaluate an alternative simulation scheme which overcomes the memory and compute challenges posed by the NEF.
+This proposed method uses factored weight matrices rather than the full weight matrix to reduce memory usage.
+Memory usage reductions of the order of \SI{90}{\percent} are possible and in some cases it is possible to simulate 2000 neurons on a processing core, double the SpiNNaker architectural target.
   \end{abstract}
 
   \section{Introduction}
