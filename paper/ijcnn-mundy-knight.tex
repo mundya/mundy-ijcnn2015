@@ -2,7 +2,7 @@
 
 \IEEEoverridecommandlockouts
 \newcommand{\funding}{%
-  This work is partially supported by the European Union under grant nos. FP7-604102 (HBP), FP7-287701 (BrainScales-Extension), and ERC-320689 (BIMPC), and by grant EP/G015740/1 (BIMPA).
+  This work is partially supported by EPSRC grant EP/G015740/1 (BIMPA); the European Union under grant nos. ERC-320689 (BIMPC), FP7-287701 (BrainScales-Extension), and FP7-604102 (HBP); and by the U.S.\ Office of Naval Research.
 }
 
 \title{An efficient SpiNNaker implementation of the Neural~Engineering~Framework}
@@ -138,7 +138,7 @@ At some point it is necessary to ensure that efficient use is made of the machin
 
 It should be noted that time is also a factor \textit{prior} to the start of any simulation.
 All data required by the SpiNNaker machine during simulation must be transmitted to it across ethernet, meaning that if more data is required on the machine, more time is required to prepare it for simulation.
-\textcite{Sharp2013} note that this preperation time can be in the order of several minutes which is undesirable if a real-time simulator is desired.
+\textcite{Sharp2013} note that this preparation time can be in the order of several minutes which is undesirable if a real-time simulator is desired.
 Reducing the memory usage is important to ensure both that efficient use is made of processing cores but also that the time required to load data to a SpiNNaker machine is reasonable.
 
   \subsection{The Neural Engineering Framework}
@@ -337,7 +337,7 @@ This is more than $3.5 \times$ the 236 neurons per core that the general purpose
     \subfloat[100 neurons per population]{
       \includegraphics[width=2.5in]{figures/comm_channel_cpu_100n_bar}
     }
-    \caption{Average percentange of 1ms simulation time step spent in different phases of our simulation algorithm when simulating communication channels of varying dimensionality using different numbers of neurons.}
+    \caption{Mean percentage of 1ms simulation time step spent in different phases of our simulation algorithm when simulating communication channels of varying dimensionality using different numbers of neurons.}
     \label{fig:results/comm-channel-cpu}
   \end{figure*}
 
@@ -402,7 +402,7 @@ This is more than $3.5 \times$ the 236 neurons per core that the general purpose
 
   SpiNNaker is but one of a range of neuromorphic simulators, a family including both analogue (e.g., Neurogrid \parencite{Benjamin2014}, BrainScaleS \parencite{Schemmel2010}) and digital (e.g., TrueNorth \parencite{Merolla2014}) hardware, which aim to reduce the power consumption and execution time for simulating large neural models.
   These simulators can be expected to require less power than SpiNNaker for a given scale of model \parencite{Stromatias2013}, but are limited to simulating the types of neurons and synapses they were fabricated with, whereas SpiNNaker can be reprogrammed to investigate new models.
-  In the context of running NEF models of the type discussed in this paper, there is another key limiation of these systems -- the number of hardware synapses associated with each neuron. In the case of TrueNorth, this number is only \num{256} and, for the BrainScaleS architecture, it is \num{16000}, restricting the size of the populations that can be connected by dense connectivity matrices to only 16 and 126 respectively.
+  In the context of running NEF models of the type discussed in this paper, there is another key limitation of these systems -- the number of hardware synapses associated with each neuron. In the case of TrueNorth, this number is only \num{256} and, for the BrainScaleS architecture, it is \num{16000}, restricting the size of the populations that can be connected by dense connectivity matrices to only 16 and 126 respectively.
 
   \subsection{Comparison to general purpose computer simulators}
 
