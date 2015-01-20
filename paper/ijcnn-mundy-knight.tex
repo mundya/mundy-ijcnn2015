@@ -217,7 +217,7 @@ On the basis of these two parameters (500 dimensions and 70 neurons per dimensio
 A connection between two of these populations would then require a dense synaptic matrix with $1.225\times10^9$ entries.
 Synaptic weights on SpiNNaker are typically represented as \SI{16}{\bit} values, hence the full matrix would be approximately \SI{2.25}{\gibi\byte}.
 As each core only has \SI{8}{\mebi\byte} of SDRAM, the population at the post-synaptic side of this connection would have to be distributed amongst 585 cores.
-This would reduce the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{}. 
+This would reduce the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000 \parencite{Furber2007}. 
 
 Representational errors can be reduced both by increasing the number of neurons and by allowing them to fire at a higher rate \parencite{Eliasmith2004}.
 Models built using the NEF typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S~\ref{sef:background/nef}, each neuron fires at an average rate of around \SI{100}{\hertz}.
@@ -311,7 +311,7 @@ Adding these equations together we can model the total CPU cycle count as:
   \mathrm{c}_\mathrm{total} = 533 + 745 D + 69 N + 13 N D\label{eq:profiling_total}
 \end{equation}
 %
-Which, in the one dimensional case matches our experimental findings that our new simulator can simulate over 2000 neurons -- double the SpiNNaker system's architectural target of 1000 \parencite{}. 
+Which, in the one dimensional case matches our experimental findings that our new simulator can simulate over 2000 neurons -- double the SpiNNaker system's architectural target of 1000 \parencite{Furber2007}. 
 By substituting $D=1$ into (\ref{eq:profiling_total}), we can see that the maximum number of neurons that could be supported in the 1-D case is 2423.
 In order to compare this model with the spike-based communication model discussed in \S\ref{sef:background/assessing}, we can further simplify (\ref{eq:profiling_total}) by substituting $D=\frac{N}{70}$ to reflect Eliasmith's \parencite{eliasmith2013build} analysis:
 %
