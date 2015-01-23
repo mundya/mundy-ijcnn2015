@@ -68,7 +68,7 @@ By building and simulating neural systems we hope to understand how the brain ma
 The Neural Engineering Framework (NEF) is a hypothesis about how such systems may be constructed and has recently been used to build the world's first functional brain model, Spaun.
 However, while the NEF simplifies the design of neural networks, simulating them using standard computer hardware is still computationally expensive -- often running far slower than biological real-time and scaling very poorly: problems the SpiNNaker neuromorphic simulator was designed to solve.
 In this paper we (1) argue that employing the same model of computation used for simulating general purpose spiking neural networks on SpiNNaker for NEF models results in sub-optimal use of the architecture, and (2) provide and evaluate an alternative simulation scheme which overcomes the memory and compute challenges posed by the NEF.
-This proposed method uses factored weight matrices to reduce memory usage by around 90\% and, in some cases simulate 2000 neurons on a processing core, double the SpiNNaker architectural target.
+This proposed method uses factored weight matrices to reduce memory usage by around~90\% and, in some cases, simulate 2000 neurons on a processing core -- double the SpiNNaker architectural target.
   \end{abstract}
 
   \section{Introduction}
@@ -78,7 +78,7 @@ Conversely, if the simulation time is limited (for example, if biological real-t
 Specialised \textit{neuromorphic} hardware tries to avoid these constraints by parallelising and distributing computational effort and relying on dense interconnection of the computing elements.
 The SpiNNaker platform~\parencite{Furber2014} is one of a range of neuromorphic simulators (including Neurogrid~\parencite{Benjamin2014}, BrainScaleS~\parencite{Schemmel2010} and TrueNorth~\parencite{Merolla2014}) which should benefit researchers of large-scale neural models.
 
-The Neural Engineering Framework (NEF)~\parencite{Eliasmith2004} is a hypothesis about how neurons may be used to encode abstract mathematical constructs,such as scalars and vectors, that we often used to model the real world.
+The Neural Engineering Framework (NEF)~\parencite{Eliasmith2004} is a hypothesis about how neurons may be used to encode abstract mathematical constructs, such as scalars and vectors, that we often use to model the real world.
 Its successes so far include the Spaun model of cognition~\parencite{Eliasmith2012} and a spiking neural network that encodes and decodes the main lexical relations in WordNet~\parencite{Crawford2013}.
 As with all neural systems, the NEF has proven costly to simulate: the Spaun model typically required \SI{2.5}{\hour} of compute time for \SI{1}{\second} of simulation~\parencite[\S V]{Stewart2014}.
 Two aspects of NEF networks that make them particularly costly to simulate are the high firing rates of individual neurons (often up to \SI{400}{\hertz}) and the dense synaptic matrices used to connect neuronal populations.
@@ -201,7 +201,7 @@ In this section we show that, based on parameters used in the Spaun functional b
 
 The Spaun model is built using the Semantic Pointer Architecture (SPA)~\parencite{eliasmith2013build} which uses randomly chosen unit vectors to represent basic concepts.
 These concepts can then be combined into symbol structures using addition~($+$) and circular convolution~($\circledast$) operators, both of which can be evaluated using the principles of the NEF.
-The circular-convolution operator is non-linear and, Eliasmith~\parencite{eliasmith2013build} demonstrates, require around 70 neurons per dimension to calculate accurately.
+The circular-convolution operator is non-linear and, Eliasmith~\parencite{eliasmith2013build} demonstrates, requires around 70 neurons per dimension to calculate accurately.
 
 For example, using the basic concepts (\semanticpointer{MOUSE}, \semanticpointer{CHEESE}, \semanticpointer{SUBJECT}, \semanticpointer{OBJECT}, \semanticpointer{EAT}, \semanticpointer{VERB}), a semantic pointer representing the sentence ``Mice eat cheese'' can be formed as $\msemanticpointer{S} = \msemanticpointer{MOUSE} \circledast \msemanticpointer{SUBJECT} + \msemanticpointer{EAT} \circledast \msemanticpointer{VERB} + \msemanticpointer{CHEESE} \circledast \msemanticpointer{OBJECT}$.
 The subject of this sentence could then be extracted using $\msemanticpointer{S} \circledast \msemanticpointer{SUBJECT}^\prime \approx \msemanticpointer{MOUSE}$ (where the ${}^\prime$ operator is an approximate inverse~\parencite[\S D.2]{eliasmith2013build}, calculated using a linear involution operation).
@@ -214,7 +214,7 @@ As synaptic weights on SpiNNaker are typically represented as \SI{16}{\bit} valu
 This would reduce the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000~\parencite{Furber2007}. 
 
 Representational errors can be reduced both by increasing the number of neurons and by allowing them to fire at a higher rate~\parencite{Eliasmith2004}.
-However, models built using the NEF typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S~\ref{sec:background/nef}, each neuron fires at an average rate of around \SI{100}{\hertz}.
+However, models built using the NEF typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S\ref{sec:background/nef}, each neuron fires at an average rate of around \SI{100}{\hertz}.
 If this example were simulated with 70 neurons per dimension, the overall spike rate would increase linearly with dimensionality as shown in \figurename~\ref{fig:results/network-utilisation}.
 In the 4 dimensional case, this means that the post-synaptic ensemble will receive around 20 incoming spikes per time-step which, due to the dense connectivity matrices, will trigger a synaptic event for each of the 280 neurons in the ensemble. 
 This results in a total of around 5600 synaptic events per time-step -- exceeding the limit of 5000 events per time-step found by Sharp and Furber~\parencite{Sharp2013}.
@@ -344,8 +344,8 @@ This is more than $3.5 \times$ the 236 neurons per core that the general purpose
   The post-synaptic core needs to store a single encoder matrix of size $D_\mathrm{post} \times N_\mathrm{post}$ while the pre-synaptic core will store a decoder matrix of size $D_\mathrm{pre} \times N_\mathrm{pre}$, where $D_\mathrm{population}$ is the dimensionality of the population.
 
   For example, a 16-D communication channel constructed from two \num{1120}-neuron populations will require \num{1254400} values to be stored in the memory of the post-synaptic core to represent the full weight matrix.
-  If factored weight matrices are used then both the pre- and post-synaptic cores must store \num{17920} values, although the post-synaptic core will not need to store any more data for any further incoming connections.
-  sing \SI{16}{\bit} to store each synaptic value and, as in our implementation, \SI{32}{\bit} to store each encoder/decoder value this becomes \SI{2.4}{\mebi\byte} to store the full weight matrix or \SI{70.0}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.0}{\kibi\byte}).
+  If factored weight matrices are used then both the pre- and post-synaptic cores must store \num{17920} values, although the post-synaptic core will not need to store any more data for further incoming connections.
+  Using \SI{16}{\bit} to store each synaptic value and, as in our implementation, \SI{32}{\bit} to store each encoder/decoder value this becomes \SI{2.4}{\mebi\byte} to store the full weight matrix or \SI{70.0}{\kibi\byte} each to store the encoder and decoder (a total of \SI{140.0}{\kibi\byte}).
   Factored weight matrices achieve a saving~of~\SI{94.3}{\percent}.
 
   \begin{table}
@@ -397,9 +397,9 @@ To avoid this \citeauthor*{Galluppi2012}\ suggested transmitting factored weight
 
   \subsection{Comparison to other neuromorphic simulators}
 
-  SpiNNaker is but one of a range of neuromorphic simulators, a family including both analogue (e.g., Neurogrid~\parencite{Benjamin2014}, BrainScaleS~\parencite{Schemmel2010}) and digital (e.g., TrueNorth~\parencite{Merolla2014}) hardware, which aim to reduce the power consumption and execution time for simulating large neural models.
+  SpiNNaker is one of a range of neuromorphic simulators, a family including both analogue (e.g., Neurogrid~\parencite{Benjamin2014}, BrainScaleS~\parencite{Schemmel2010}) and digital (e.g., TrueNorth~\parencite{Merolla2014}) hardware, which aim to reduce the power consumption and execution time for simulating large neural models.
   These simulators can be expected to require less power than SpiNNaker for a given scale of model~\parencite{Stromatias2013}, but are limited to simulating the types of neurons and synapses they were fabricated with, whereas SpiNNaker can be reprogrammed to investigate new models.
-  In the context of running NEF models of the type discussed in this paper, there is another key limitation of these systems -- the number of hardware synapses associated with each neuron. In the case of TrueNorth, this number is only \num{256} and, for the BrainScaleS architecture, it is \num{16000}, restricting the size of the populations that can be connected using dense connectivity matrices to only 16 and 126 respectively.
+  In the context of running NEF models of the type discussed in this paper, there is another key limitation of these systems -- the number of hardware synapses associated with each neuron. In the case of TrueNorth this number is only \num{256} and for the BrainScaleS \num{16000}, restricting the size of the populations that can be connected using dense connectivity matrices to only 16 and 126 respectively.
 
   \subsection{Comparison to general purpose computer simulators}
 
@@ -421,8 +421,8 @@ To avoid this \citeauthor*{Galluppi2012}\ suggested transmitting factored weight
   \subsection{Future work}
 
   This work has laid the basis for simulating truly large-scale NEF models in biological real-time.
-  We plan several improvements which should enable a greater number of neurons to fit on a single core and, beyond this we anticipate the implementation of further neuron and synapse models.
-  In particular, we also intend to better assess the computational cost or gain of value-based transmission when implementing learning rules (e.g.,~\parencite{Voelker2014}) and investigate how a constant traffic pattern affects the SpiNNaker network architecture.
+  We plan several improvements which should allow a greater number of neurons to fit on a single core and, beyond this, we anticipate the implementation of further neuron and synapse models.
+  We also intend to better assess the computational cost or gain of value-based transmission when implementing learning rules (e.g.,~\parencite{Voelker2014}) and investigate how a constant traffic pattern affects the SpiNNaker network architecture.
 
   \section{Conclusion}
 
