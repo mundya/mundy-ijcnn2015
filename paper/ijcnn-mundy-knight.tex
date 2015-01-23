@@ -7,12 +7,12 @@
 
 \title{An efficient SpiNNaker implementation of the Neural~Engineering~Framework}
 \author{%
-  \IEEEauthorblockN{Andrew~Mundy and Jamie~Knight}
+  \IEEEauthorblockN{Andrew~Mundy and James~Knight}
   \IEEEauthorblockA{School of Computer Science,\\
                     University of Manchester,\\
-                    Oxford Road, Manchester,\\
                     M13 9PL, UK\\
-                    Email: andrew.mundy@ieee.org}
+                    Email: andrew.mundy@ieee.org\\
+                    Email: james.knight@manchester.ac.uk}
   \and
   \IEEEauthorblockN{Terrence~C.~Stewart}
   \IEEEauthorblockA{Centre for Theoretical Neuroscience,\\
@@ -388,7 +388,7 @@ This is more than $3.5 \times$ the 236 neurons per core that the general purpose
 
   \subsection{Comparison to prior SpiNNaker implementations}
 
-  \textcite{Galluppi2012} demonstrated a SpiNNaker implementation of the NEF using the method described in \S\ref{sec:background/nn}.
+  \textcite{Galluppi2012} demonstrated a SpiNNaker implementation of the NEF using the approach described in \S\ref{sec:background/nn}.
   For the reasons advanced in this paper, we believe that this system would not have been capable of successfully simulating models of the scale or complexity of Spaun in biological real-time.
   First hand experience with this system indicated that the load time required to transfer full synaptic matrices to a SpiNNaker machine could be extensive. 
 To avoid this \citeauthor*{Galluppi2012}\ suggested transmitting factored weight matrices and performing their multiplication on SpiNNaker.
@@ -427,9 +427,9 @@ To avoid this \citeauthor*{Galluppi2012}\ suggested transmitting factored weight
   \section{Conclusion}
 
   The dense synaptic weight matrices and high firing rates characteristic of neural networks built using the NEF lead to inefficient use of the SpiNNaker architecture when using the standard algorithms for simulating neural nets.
-  In particular storing the synaptic matrices for these networks requires large amounts of memory and high firing rates and dense neural connectivity exceed the computational resources available to a SpiNNaker core simulating a model in biological real-time.
+  In particular storing the synaptic matrices of these networks requires large amounts of memory and the high firing rates and dense neural connectivity exceed the computational resources available to a SpiNNaker core running in biological real-time.
   To overcome these constraints we extended a simulation scheme proposed by \textcite*{Bekolay2014} which used factored weight matrices.
-  This proposed scheme requires around 90\% less memory in many cases and is able to simulate many more neurons per core than would otherwise be possible -- in some up to 2000 neurons per core, double the SpiNNaker architectural target.
+  This proposed scheme requires around 90\% less memory in many cases and is able to simulate many more neurons per core than would otherwise be possible -- up to 2000 neurons per core, double the SpiNNaker architectural target.
   We intend to use the algorithm we have presented to simulate the Spaun functional brain model in biological real-time.
 
   \section*{Acknowledgements}
