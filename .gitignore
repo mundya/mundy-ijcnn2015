@@ -1,0 +1,11 @@
+*.pdf
+*.toc
+*.aux
+*.lo[gft]
+*.bbl
+*.blg
+*.swp
+*.pyg
+*.out
+*.nav
+*.snm

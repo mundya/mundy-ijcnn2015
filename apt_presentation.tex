@@ -1,0 +1,40 @@
+\documentclass[t]{beamer}
+\usetheme[cabin, darktitle]{UniversityOfManchester}
+
+%% Document properties
+\title{An efficient SpiNNaker implementation of the NEF}
+\author{Andrew Mundy, James Knight, Terry Stewart and Steve Furber}
+
+\begin{document}
+  \maketitle
+
+  %% Introduction to the NEF
+  %% - Encoding
+  %% - Decoding
+  %% - Forming weight matrices
+
+  %% Constraints on SpiNNaker programs
+  %% - Memory usage
+  %%  - In its own right
+  %%  - Time to load data
+  %% - Processing time
+  %%  - Dominated by synaptic weight lookup -- < 5000 synaptic events per timestep
+
+  %% How does the NEF meet these constraints?
+  %% - Consider communication channel using Spaun-like parameters of 16-D and 70 neurons per dimension
+  %%  - Memory use is insane (down to 53 neurons per core)
+  %%  - Synaptic events very quickly pass the max allowed
+  %% Result: using the standard approach with the NEF will lead to suboptimal use of the architecture.
+
+  %% An alternative: value-based transmission
+  %% - Note that weight matrices can be factored into encoders and decoders
+  %% - Indicate how this can be used in simulation using the payloads of MC packets
+
+  %% Results
+  %% - Memory usage
+  %% - Processor usage
+
+  %% Discussion (brief)
+
+  %% Thanks!
+\end{document}
