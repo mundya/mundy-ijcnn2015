@@ -9,6 +9,14 @@
   \maketitle
 
   %% Introduction to the NEF
+  \begin{frame}{The Neural Engineering Framework (NEF)}
+    \begin{itemize}
+      \item Populations of neurons represent abstract values.
+      \item Connections compute functions of representations.
+      \item Extended by the Semantic Pointer Architecture (SPA).
+    \end{itemize}
+  \end{frame}
+
   %% - Encoding
   %% - Decoding
   %% - Forming weight matrices
@@ -19,6 +27,14 @@
   %%  - Time to load data
   %% - Processing time
   %%  - Dominated by synaptic weight lookup -- < 5000 synaptic events per timestep
+  \begin{frame}{Performance of the SpiNNaker architecture}
+    \begin{itemize}
+      \item 5000 synaptic events per second
+      \begin{itemize}
+        \item One synaptic event is one spike for one synapse.
+      \end{itemize}
+    \end{itemize}
+  \end{frame}
 
   %% How does the NEF meet these constraints?
   %% - Consider communication channel using Spaun-like parameters of 16-D and 70 neurons per dimension
