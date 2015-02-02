@@ -8,19 +8,6 @@
 \begin{document}
   \maketitle
 
-  %% Introduction to the NEF
-  \begin{frame}{The Neural Engineering Framework (NEF)}
-    \begin{itemize}
-      \item Populations of neurons represent abstract values.
-      \item Connections compute functions of representations.
-      \item Extended by the Semantic Pointer Architecture (SPA).
-    \end{itemize}
-  \end{frame}
-
-  %% - Encoding
-  %% - Decoding
-  %% - Forming weight matrices
-
   %% Constraints on SpiNNaker programs
   %% - Memory usage
   %%  - In its own right
@@ -34,6 +21,35 @@
         \item One synaptic event is one spike for one synapse.
       \end{itemize}
     \end{itemize}
+  \end{frame}
+
+  %% Introduction to the NEF
+  \begin{frame}{The Neural Engineering Framework (NEF)}
+    \begin{itemize}
+      \item Populations of neurons represent abstract values.
+      \item Connections compute functions of representations.
+      \item Extended by the Semantic Pointer Architecture (SPA).
+    \end{itemize}
+  \end{frame}
+
+  %% - Encoding
+  %% - Decoding
+  %% - Forming weight matrices
+  %% TODO Motivate encoding, explain decoding
+  \begin{frame}[plain]{Representing scalars}
+    \vfill
+    \includegraphics[width=\textwidth]{encoding_decoding}
+    \vfill
+  \end{frame}
+
+  \begin{frame}[plain]{Representing vectors}
+    \vfill
+    \includegraphics[width=\textwidth]{encoding_decoding2d}
+    \vfill
+  \end{frame}
+
+  \begin{frame}{Combining encoding and decoding}
+    
   \end{frame}
 
   %% How does the NEF meet these constraints?

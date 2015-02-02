@@ -9,3 +9,4 @@
 *.out
 *.nav
 *.snm
+.ipynb_checkpoints/*
