@@ -10,3 +10,5 @@
 *.nav
 *.snm
 .ipynb_checkpoints/*
+*-blx.bib
+*.run.xml

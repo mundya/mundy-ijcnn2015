@@ -9,27 +9,27 @@ BIBFLAGS=
 texdoc=apt_presentation
 
 .PHONY: clean
-.PHONY: cmyk
 .PHONY: bib
-.PHONY: complete
+.PHONY: algorithm_diagram
 
 # Make all items
 all : $(texdoc).tex
 	$(TEX) $(TEXFLAGS) $(texdoc)
-
-# Complete (rather than quick build)
-complete : clean bib all
 
 # Generate reference requirements
 $(texdoc).aux :
 	$(TEX) $(TEXFLAGS) $(texdoc)
 
 # Generate the bibliography
-bib : all
+bib : $(texdoc).aux
 	$(BIB) $(BIBFLAGS) $(texdoc)
 	$(TEX) $(TEXFLAGS) $(texdoc)
 	$(TEX) $(TEXFLAGS) $(texdoc)
 
+algorithm_diagram : algorithm_diagram.tex
+	$(TEX) algorithm_diagram.tex
+	$(TEX) algorithm_diagram.tex
+
 # Clean
 clean :
-	find . -type f -regex ".*\.\(aux\|bbl\|bcf\|blg\|log\|pdf\|png\|out\|toc\|lof\|lot\|count\)" -delete
+	rm $(texdoc).pdf

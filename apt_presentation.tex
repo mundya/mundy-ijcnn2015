@@ -2,8 +2,13 @@
 \usetheme[cabin, darktitle]{UniversityOfManchester}
 
 %% Document properties
-\title{An efficient SpiNNaker implementation of the NEF}
-\author{Andrew Mundy, James Knight, Terry Stewart and Steve Furber}
+\title{An efficient SpiNNaker implementation of the Neural~Engineering~Framework}
+\author{Andrew Mundy, James Knight,\\Terry Stewart and Steve Furber}
+
+\usepackage[binary-units]{siunitx}
+\usepackage[backend=bibtex, doi=false, url=false,
+            autocite=footnote, maxbibnames=3]{biblatex}
+\bibliography{paper}
 
 \begin{document}
   \maketitle
@@ -14,12 +19,25 @@
   %%  - Time to load data
   %% - Processing time
   %%  - Dominated by synaptic weight lookup -- < 5000 synaptic events per timestep
+  \begin{frame}{Simulating neural nets on SpiNNaker}
+    \vfill
+    \hspace*{-.15\textwidth}\includegraphics[page=2, width=1.3\textwidth]{algorithm_diagram}
+    \vfill
+    \pause
+    Constraints on number of neurons per core:
+    \begin{description}
+      \item[Memory] Size of weight matrix
+      \item[Compute] Number of synaptic events
+    \end{description}
+  \end{frame}
+
   \begin{frame}{Performance of the SpiNNaker architecture}
     \begin{itemize}
-      \item 5000 synaptic events per second
+      \item Max 5000 synaptic events per second \footcite{Sharp2013}.
       \begin{itemize}
         \item One synaptic event is one spike for one synapse.
       \end{itemize}
+      \item \SI{8}{\mebi\byte} limit on weight matrices.
     \end{itemize}
   \end{frame}
 
@@ -49,7 +67,6 @@
   \end{frame}
 
   \begin{frame}{Combining encoding and decoding}
-    
   \end{frame}
 
   %% How does the NEF meet these constraints?
@@ -61,6 +78,11 @@
   %% An alternative: value-based transmission
   %% - Note that weight matrices can be factored into encoders and decoders
   %% - Indicate how this can be used in simulation using the payloads of MC packets
+  \begin{frame}{Value Transmission}
+    \vfill
+    \hspace*{-.15\textwidth}\includegraphics[page=1, width=1.3\textwidth]{algorithm_diagram}
+    \vfill
+  \end{frame}
 
   %% Results
   %% - Memory usage
