@@ -7,7 +7,7 @@
 
 \usepackage[binary-units]{siunitx}
 \usepackage[backend=bibtex, doi=false, url=false,
-            autocite=footnote, maxbibnames=3]{biblatex}
+            autocite=footnote, maxbibnames=3, style=authoryear]{biblatex}
 \bibliography{paper}
 
 \begin{document}
@@ -32,13 +32,37 @@
   \end{frame}
 
   \begin{frame}{Performance of the SpiNNaker architecture}
+    Constraints:
     \begin{itemize}
-      \item Max 5000 synaptic events per second \footcite{Sharp2013}.
+      \item \SI{8}{\mebi\byte} limit on weight matrices.
+      \item Max \num{5000} synaptic events per second \parencite{Sharp2013}.
       \begin{itemize}
         \item One synaptic event is one spike for one synapse.
       \end{itemize}
-      \item \SI{8}{\mebi\byte} limit on weight matrices.
     \end{itemize}
+
+    \pause
+    Overcome by:
+    \begin{itemize}[<+->]
+      \item Allocating fewer neurons to a core
+        \begin{itemize}
+          \item \textbf{but} power and number of processors limited.
+        \end{itemize}
+      \item Using longer simulation time-steps
+        \begin{itemize}
+          \item \textbf{but} sometimes hard deadlines.
+        \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}{Bad characteristics}
+    Fine for the majority of the cases, not helped by:
+    \begin{itemize}
+      \item Dense weight matrices
+      \item High firing rates
+    \end{itemize}
+    \pause
+    Both characteristics of models built with the Neural~Engineering~Framework~(NEF)
   \end{frame}
 
   %% Introduction to the NEF
@@ -82,6 +106,11 @@
     \vfill
     \hspace*{-.15\textwidth}\includegraphics[page=1, width=1.3\textwidth]{algorithm_diagram}
     \vfill
+    \pause
+    \begin{itemize}
+      \item Factored weight matrices $\ll$ full weight matrix
+      \item Different compute requirements
+    \end{itemize}
   \end{frame}
 
   %% Results
