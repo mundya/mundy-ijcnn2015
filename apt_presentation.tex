@@ -1,14 +1,20 @@
-\documentclass[t]{beamer}
+\documentclass[handout,t]{beamer}
 \usetheme[cabin, darktitle]{UniversityOfManchester}
 
 %% Document properties
 \title{An efficient SpiNNaker implementation of the Neural~Engineering~Framework}
 \author{Andrew Mundy, James Knight,\\Terry Stewart and Steve Furber}
 
+\usepackage{amssymb}
+\usepackage{booktabs}
 \usepackage[binary-units]{siunitx}
 \usepackage[backend=bibtex, doi=false, url=false,
             autocite=footnote, maxbibnames=3, style=authoryear]{biblatex}
 \bibliography{paper}
+
+\renewcommand{\vec}{\mathbf}
+\newcommand{\semanticpointer}{\textbf}
+\newcommand{\msemanticpointer}[1]{\mbox{\semanticpointer{#1}}}
 
 \begin{document}
   \maketitle
@@ -71,6 +77,9 @@
       \item Populations of neurons represent abstract values.
       \item Connections compute functions of representations.
       \item Extended by the Semantic Pointer Architecture (SPA).
+        \begin{itemize}
+          \item Used to build Spaun, ``the world's largest functional brain model''
+        \end{itemize}
     \end{itemize}
   \end{frame}
 
@@ -91,6 +100,58 @@
   \end{frame}
 
   \begin{frame}{Combining encoding and decoding}
+    \includegraphics[width=\textwidth]{weight_matrices}
+
+    \begin{itemize}
+      \item Synaptic weights show the degree of similarity: $\omega_{ij} = \vec{d}_i \cdot \vec{e}_j$
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}{The Semantic Pointer Architecture (SPA)}
+    \begin{itemize}
+      \item Represent ``concepts'' using high-dimensional vectors.
+    \end{itemize}
+
+    \begin{center}
+      \begin{tabular}{c l}
+        \toprule
+          $\msemanticpointer{A} + \msemanticpointer{B}$ & A vector similar to both \semanticpointer{A} and \semanticpointer{B}. \\
+          $\msemanticpointer{A} \circledast \msemanticpointer{B}$ & A vector dissimilar to both \semanticpointer{A} and \semanticpointer{B}. \\
+          $\msemanticpointer{A}^\prime$ & Approximate inverse of \semanticpointer{A}. \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+
+    Operations computable with the principles of the NEF.
+  \end{frame}
+
+  \begin{frame}{The Semantic Pointer Architecture (SPA)}
+    Represent a series of shapes with:
+    \begin{align*}
+      \msemanticpointer{X} &= \msemanticpointer{BLUE}\circledast\msemanticpointer{TRIANGLE} \\
+                           &+ \msemanticpointer{RED}\circledast\msemanticpointer{SQUARE}\\
+                           &+ \msemanticpointer{GREEN}\circledast\msemanticpointer{CIRCLE}
+    \end{align*}
+
+    Query with inverse: ``What shape is red?''
+    \begin{align*}
+      \msemanticpointer{X} \circledast \msemanticpointer{RED}^\prime &\approx \msemanticpointer{SQUARE}
+    \end{align*}
+    Result needs ``cleaning up''.
+  \end{frame}
+
+  \begin{frame}{Requirements of the NEF}
+    General requirements:
+    \begin{itemize}
+      \item Weight matrices are dense
+      \item High firing rates (typically upto \SI{400}{\hertz})
+    \end{itemize}
+
+    Heuristics for SPA:
+    \begin{itemize}
+      \item 70 neurons per dimension
+      \item 500 dimensions for a human size vocabulary
+    \end{itemize}
   \end{frame}
 
   %% How does the NEF meet these constraints?

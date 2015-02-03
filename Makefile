@@ -11,6 +11,7 @@ texdoc=apt_presentation
 .PHONY: clean
 .PHONY: bib
 .PHONY: algorithm_diagram
+.PHONY: weight_matrices
 
 # Make all items
 all : $(texdoc).tex
@@ -29,6 +30,9 @@ bib : $(texdoc).aux
 algorithm_diagram : algorithm_diagram.tex
 	$(TEX) algorithm_diagram.tex
 	$(TEX) algorithm_diagram.tex
+
+weight_matrices : weight_matrices.tex
+	$(TEX) weight_matrices.tex
 
 # Clean
 clean :
