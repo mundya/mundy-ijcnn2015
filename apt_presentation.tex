@@ -42,9 +42,6 @@
     \begin{itemize}
       \item \SI{8}{\mebi\byte} limit on weight matrices.
       \item Max \num{5000} synaptic events per millisecond \parencite{Sharp2013}.
-      \begin{itemize}
-        \item One synaptic event is one spike for one synapse.
-      \end{itemize}
     \end{itemize}
 
     \pause
@@ -61,15 +58,15 @@
     \end{itemize}
   \end{frame}
 
-  \begin{frame}{Bad characteristics}
-    Fine for the majority of the cases, not helped by:
-    \begin{itemize}
-      \item Dense weight matrices
-      \item High firing rates
-    \end{itemize}
-    \pause
-    Both characteristics of models built with the Neural~Engineering~Framework~(NEF)
-  \end{frame}
+%  \begin{frame}{Bad characteristics}
+%    Fine for the majority of the cases, not helped by:
+%    \begin{itemize}
+%      \item Dense weight matrices
+%      \item High firing rates
+%    \end{itemize}
+%    \pause
+%    Both characteristics of models built with the Neural~Engineering~Framework~(NEF)
+%  \end{frame}
 
   %% Introduction to the NEF
   \begin{frame}{The Neural Engineering Framework (NEF)}
@@ -108,25 +105,7 @@
   \end{frame}
 
   \begin{frame}{The Semantic Pointer Architecture (SPA)}
-    \begin{itemize}
-      \item Represent ``concepts'' using high-dimensional vectors.
-    \end{itemize}
-
-    \begin{center}
-      \begin{tabular}{c l}
-        \toprule
-          $\msemanticpointer{A} + \msemanticpointer{B}$ & A vector similar to both \semanticpointer{A} and \semanticpointer{B}. \\
-          $\msemanticpointer{A} \circledast \msemanticpointer{B}$ & A vector dissimilar to both \semanticpointer{A} and \semanticpointer{B}. \\
-          $\msemanticpointer{A}^\prime$ & Approximate inverse of \semanticpointer{A}. \\
-        \bottomrule
-      \end{tabular}
-    \end{center}
-
-    Operations computable with the principles of the NEF.
-  \end{frame}
-
-  \begin{frame}{The Semantic Pointer Architecture (SPA)}
-    Represent a series of shapes with:
+    Represent concepts using high dimensional vectors, e.g.:
     \begin{align*}
       \msemanticpointer{X} &= \msemanticpointer{BLUE}\circledast\msemanticpointer{TRIANGLE} \\
                            &+ \msemanticpointer{RED}\circledast\msemanticpointer{SQUARE}\\
@@ -152,6 +131,8 @@
       \item 70 neurons per dimension
       \item 500 dimensions for a human size vocabulary
     \end{itemize}
+    \pause
+    \textbf{Result: Poor use of the SpiNNaker architecture}
   \end{frame}
 
   %% How does the NEF meet these constraints?
@@ -159,6 +140,51 @@
   %%  - Memory use is insane (down to 53 neurons per core)
   %%  - Synaptic events very quickly pass the max allowed
   %% Result: using the standard approach with the NEF will lead to suboptimal use of the architecture.
+  \begin{frame}{NEF on SpiNNaker -- Memory usage}
+    Communication channel:
+    \begin{itemize}
+      \item Two populations representing 500 dimensions
+      \item Each population has $70 \times 500 = \num{35000}$ neurons
+      \item $\omega$ of order $\num{35000} \times \num{35000}$
+      \begin{itemize}
+        \item contains \num{1.225d9} elements
+        \item at \SI{16}{\bit} per synapse = \SI{2.28}{\gibi\byte}
+      \end{itemize}
+      \item \textbf{Fewer than 119 neurons per core}
+    \end{itemize}
+
+    \vfill
+    {\footnotesize Being kind and using dense matrices!}
+  \end{frame}
+
+  \begin{frame}{NEF on SpiNNaker -- Processor usage}
+    Dominated by synaptic weight lookup --
+    \begin{itemize}
+      \item max 5000 synaptic events per millisecond
+      \item NEF models have high firing rates -- typically up to \SI{400}{\hertz}
+    \end{itemize}
+
+    Communication channel:
+    \begin{itemize}
+      \item Two populations representing 4 dimensions
+      \begin{itemize}
+        \item 280 neurons per ensemble
+      \end{itemize}
+      \item $\approx 20$ incoming spikes per millisecond
+      \begin{itemize}
+        \item \num{5600} synaptic events per millisecond
+      \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}{NEF on SpiNNaker}
+    \begin{itemize}
+      \item Dense weight matrices
+      \item High firing rates
+    \end{itemize}
+
+    Likely will not scale to simulating Spaun: \textbf{what to do?}
+  \end{frame}
 
   %% An alternative: value-based transmission
   %% - Note that weight matrices can be factored into encoders and decoders
@@ -176,9 +202,80 @@
 
   %% Results
   %% - Memory usage
-  %% - Processor usage
+  \begin{frame}{Results -- Memory usage}
+    Communication channel:
+    \begin{itemize}
+      \item Two populations representing 500 dimensions
+      \item Each population has $70 \times 500 = \num{35000}$ neurons
+      \item $\vec{D}$ and $\vec{E}$ of size $35000 \times 500$
+      \begin{itemize}
+        \item at \SI{32}{\bit} per value = \SI{133}{\mebi\byte}
+      \end{itemize}
+      \item \textbf{Around 2000 neurons per core} -- become compute bound before that!
+    \end{itemize}
+  \end{frame}
 
-  %% Discussion (brief)
+  \begin{frame}{Results -- Memory usage}
+    Using basal ganglia model from Spaun:
+    \begin{center}
+      \begin{tabular}{r S S S S}
+        \toprule
+          Inputs & {16} & {32} & {64} & {128} \\
+        \midrule
+          Full weight matrix / \si{\mebi\byte} & 5.38 & 20.34 & 78.96 & 311.04\\
+          Factored / \si{\mebi\byte} & 0.18 & 0.63 & 2.37 & 9.18\\
+          Reduction / \si{\percent} & 96.71 & 96.89 & 96.99 & 97.05\\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+  \end{frame}
+
+  %% - Processor usage
+  \begin{frame}{Results -- Processor usage}
+    Using 70 neurons per dimension:
+    \begin{itemize}
+      \item Standard SpiNNaker scheme:\\
+        $128N + 3N^2$ cycles
+        \begin{itemize}
+          \item Max of 236 neurons per core
+        \end{itemize}
+      \item Value-based scheme:\\
+        $533 + 80N + 0.19N^2$ cycles
+        \begin{itemize}
+          \item Max of 834 neurons per core
+        \end{itemize}
+    \end{itemize}
+
+    With 1-D representations: \textbf{2000 neurons per core}.
+    \vfill
+    {\small\color{black!60!white} Real-time using \SI{1}{\milli\second} time-steps, processor running at \SI{200}{\mega\hertz}.}
+  \end{frame}
+
+  \begin{frame}{Conclusion}
+    \begin{itemize}
+      \item Characteristics of the NEF lead to inefficient use of SpiNNaker
+      \begin{itemize}
+        \item Dense weight matrices
+        \item High firing rates
+      \end{itemize}
+      \item Factored weight matrices
+      \begin{itemize}
+        \item Change nature of communication, \textbf{but}
+        \item Reduce memory usage
+        \item Increase number of neurons per core (up to 2000)
+      \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+  \begin{darkframes}
+    \begin{frame}
+      \centering
+      \vfill
+      {\Huge Thank You}\\\vskip\baselineskip
+      {\Large Any questions?}
+      \vfill
+    \end{frame}
+  \end{darkframes}
 
   %% Thanks!
 \end{document}
