@@ -210,8 +210,8 @@ This process is performed using an auto-associative memory network~\parencite{St
 
 On the basis of these two parameters (500 dimensions and 70 neurons per dimension) we can determine that semantic pointers with this dimensionality would need to be represented using populations of $3.5\times10^4$ neurons.
 A connection between two of these populations would therefore require a dense synaptic matrix with $1.225\times10^9$ entries.
-As synaptic weights on SpiNNaker are typically represented as \SI{16}{\bit} values, this full matrix would occupy approximately \SI{2.25}{\gibi\byte} of memory meaning that, as each core only has \SI{8}{\mebi\byte} of SDRAM, the post-synaptic ensemble would have to be distributed amongst 585 cores.
-This would reduce the number of neurons simulated per core to only 53 -- several orders of magnitude short of SpiNNaker's architectural target of 1000~\parencite{Furber2007}. 
+As synaptic weights on SpiNNaker are typically represented as \SI{16}{\bit} values, this full matrix would occupy approximately \SI{2.28}{\gibi\byte} of memory meaning that, as each core only has \SI{8}{\mebi\byte} of SDRAM, the post-synaptic ensemble would have to be distributed amongst 292 cores.
+This would reduce the number of neurons simulated per core to only 120 -- an order of magnitude short of SpiNNaker's architectural target of 1000~\parencite{Furber2007}.
 
 Representational errors can be reduced both by increasing the number of neurons and by allowing them to fire at a higher rate~\parencite{Eliasmith2004}.
 However, models built using the NEF typically opt to use fewer neurons firing at rates of up to \SI{400}{\hertz}, meaning that in networks such as the communication channel example discussed in \S\ref{sec:background/nef}, each neuron fires at an average rate of around \SI{100}{\hertz}.
