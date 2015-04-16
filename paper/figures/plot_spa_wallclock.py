@@ -64,7 +64,7 @@ def get_total(data, experiment_index):
 stack(reference, 0.0, False)
 stack(spinnaker, bar_width + bar_spacing, True)
 
-axis.set_ylabel("Time / seconds")
+axis.set_ylabel("Time / s")
     
 # Combine bar positions to get tick positions
 ticks = numpy.concatenate((bar_x, bar_x + bar_width + bar_spacing))
