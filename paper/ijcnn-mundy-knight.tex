@@ -129,7 +129,7 @@ This time is a function of both the number of spikes received per time-step and 
 \textcite[\S III.C]{Sharp2013} indicate that at most there may be \num{5000} synaptic events per millisecond when running at biological real-time, where a single synaptic event indicates one spike being passed through a single synapse to a neuron on the receiving core.
   \end{enumerate}
 
-These constraints may be met by either allocating fewer neurons to each processing core or by increasing the processing time used for each simulation time-step.
+These constraints may be satisfied by either allocating fewer neurons to each processing core or by increasing the processing time used for each simulation time-step.
 Hard time constraints are necessary when SpiNNaker is required to run in biological real-time, as it is in experiments with other neuromorphic hardware.
 Processor constraints are present for those with access to only small SpiNNaker machines such as those mounted in mobile robots.
 
@@ -180,7 +180,7 @@ With $i$ indexing neurons in the pre-synaptic population and $j$ those in the po
 
 An illustrative model that we will use later in this paper is the \textit{communication channel}.
   A communication channel consists of two populations connected with the synaptic weights chosen such that the second ensemble will represent the same value as the first ensemble.
-  The concept is illustrated in \figurename~\ref{fig:background/comms-channel}.
+  The concept is illustrated in \figurename~\ref{fig:background/comms-channel}; where, to illustrate how computational constraints may be satisfied, the pre-synaptic population has been partitioned across two processing cores.
 
   \begin{figure}
     \centering
