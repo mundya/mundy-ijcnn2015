@@ -59,7 +59,12 @@
 \usepackage[backend=bibtex, style=ieee, doi=false, url=false, maxbibnames=7]{biblatex}
 \bibliography{paper}
 \usepackage{xcolor}
-\renewcommand*{\bibfont}{\small}
+
+% Bib should be small and broken cleanly
+\renewcommand*{\bibfont}{\small\renewbibmacro{finentry}{%
+  \iffieldequalstr{entrykey}{Sharp2013}%<- key after which you want the break
+   {\finentry\newpage}
+   {\finentry}}}
 
 \begin{document}
   \maketitle
