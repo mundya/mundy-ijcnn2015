@@ -140,8 +140,8 @@ Hard time constraints are necessary when SpiNNaker is required to run in biologi
 Processor constraints are present for those with access to only small SpiNNaker machines such as those mounted in mobile robots.
 
 It should be noted that time is also a factor \textit{prior} to the start of any simulation.
-All data required by the SpiNNaker machine during simulation must be transmitted to it through an ethernet interface, meaning that if more data is required on the machine, more time is required to prepare it for simulation.
-\textcite{Sharp2013} note that this preparation time can be in the order of several minutes  -- something that is undesirable if a real-time simulator is desired.
+All data required by the SpiNNaker machine during simulation must be transmitted to it through an ethernet interface, meaning that if more data is required on the machine more time is required to prepare it for simulation.
+\textcite{Sharp2013} note that this preparation time can be of the order of several minutes  -- something that is undesirable if a real-time simulator is desired.
 
   \subsection{The Neural Engineering Framework}
   \label{sec:background/nef}
@@ -412,7 +412,7 @@ To avoid this \citeauthor*{Galluppi2012}\ suggested transmitting factored weight
   The reference implementation of the NEF is Nengo~\parencite{Bekolay2014}.
   This defines a backend-agnostic set of elements that can be used to construct networks using the principles of the NEF, and a simulation tool which uses the same technique of factoring weight matrices that we have exploited here to reduce memory usage.
   \textcite*{Bekolay2014}\ show that this reference implementation performs well in comparison to alternative PC-based neural simulators such as Brian~\parencite{Goodman2009}, NEURON~\parencite{carnevale2006neuron} and NEST~\parencite{Gewaltig2007} and can also be accelerated using commodity GPU hardware.
-  However, while an ATI Radeon HD 7970 GPU can simulate around \num{500000000} neurons in real-time~\parencite{Bekolay2014} -- comparable to our approach running on a 48 chip SpiNNaker system -- scaling beyond one GPU is likely to be constrained by PCI bus bandwidth. Furthermore, GPUs can be expected to consume significantly more power~\parencite{Wang2010} than an equivalent SpiNNaker system~\parencite{stromatias2013power}.
+  However, while an ATI Radeon HD 7970 GPU can simulate around \num{500000000} neurons in real-time~\parencite{Bekolay2014} -- comparable to our approach running on a 48 chip SpiNNaker system -- scaling beyond one GPU is likely to be constrained by PCI bus bandwidth. Furthermore, GPUs can be expected to consume significantly more power~\parencite{Wang2010} than an equivalent SpiNNaker system~\parencite{Stromatias2013}.
 
   We have extended the work of \citeauthor*{Bekolay2014} by indicating specific reductions in memory usage and by transferring the factored weight matrix simulation scheme to a distributed computing architecture.
   A particular advantage of the SpiNNaker architecture is that it will simulate networks in biological real-time regardless of model scale and complexity (see \figurename~\ref{fig:results/spa-wall-clock}) -- something that is not possible for commodity hardware.
