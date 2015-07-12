@@ -1,0 +1,14 @@
+*.aux
+*.log
+*.swp
+*.bbl
+*.xml
+*.bl[gx]
+*-blx.bib
+*.pdf
+*.nav
+*.out
+*.snm
+*.toc
+.ipynb*/
+*__pycache__*
