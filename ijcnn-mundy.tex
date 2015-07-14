@@ -21,48 +21,40 @@
   % * Spaun simulation took 2.5hr of compute per 1s of simulation
   % * Presenting a novel implementation of the NEF for SpiNNaker that focusses
   %   on scaling
-  \begin{frame}[plain]{Neurally implemented cognitive models}
+  \begin{frame}
+    \vskip2\baselineskip
+    \begin{columns}[t]
+      \begin{column}{.55\textwidth}
+        \begin{center}
+          \includegraphics[width=\textwidth]{figures/spaun}
 
-    \begin{columns}[c]
-      \begin{column}{.6\textwidth}
-        Spaun -- \SI{2.5}{\hour} compute for \SI{1}{\second} simulation
+          Spaun
+        \end{center}
+
+        \SI{2.5}{\hour} compute for \SI{1}{\second} simulation
         \begin{itemize}
-          \item Scales badly to larger models
+          \item Scales badly
           \item No real-world interaction
         \end{itemize}
+      \end{column}
+      \begin{column}{.55\textwidth}
+        \begin{center}
+          \includegraphics[width=.55\textwidth]{figures/spinnaker}
 
-        \vskip\baselineskip
+          SpiNNaker
+        \end{center}
 
-        SpiNNaker
+        Low-power computing platform
         \begin{itemize}
           \item Scalable
           \item Real-time
         \end{itemize}
-
-        \vskip\baselineskip
-
-        \textbf{A bad fit?}
-        \begin{itemize}
-          \item Memory usage
-          \begin{itemize}
-            \item Loading time
-          \end{itemize}
-          \item Compute load
-          \item Network load
-        \end{itemize}
-      \end{column}
-      \begin{column}{.4\textwidth}
-        \centering
-
-        \includegraphics[width=\textwidth]{figures/spaun}
-
-        \vskip2\baselineskip
-
-        \includegraphics[width=.75\textwidth]{figures/spinnaker}
-
       \end{column}
     \end{columns}
 
+    \vskip\baselineskip
+
+    A bad fit? Compute, memory and network load must be managed.
   \end{frame}
 
   % Neural Engineering Framework
@@ -123,7 +115,7 @@
 
     Each core has \SI{8}{\mebi\byte} memory for weight matrices
 
-    \textbf{One weight-matrix requires \SI{2.28}{\gibi\byte} -- only 120 neurons per core}
+    \textbf{One weight-matrix requires \SI{2.28}{\gibi\byte} must be split across cores -- only 120 neurons per core}
   \end{frame}
 
   % Solution ("Exploiting features of the NEF...")
